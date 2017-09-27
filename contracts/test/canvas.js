@@ -5,9 +5,11 @@ contract('Canvas', (accounts) => {
     let canvas = null;
     return Canvas.deployed().then((ins) => {
       canvas = ins;
-      return ins.draw(0, 0, 1);
+      return ins.setUser("throttle", accounts[0]);
     }).then(() => {
-      canvas.draw(1, 2, 1);
+      return canvas.draw(0, 0, 1, accounts[0], 0x0);
+    }).then(() => {
+      canvas.draw(1, 2, 1, accounts[0], 0x0);
     });
   });
 });

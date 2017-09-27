@@ -1,7 +1,8 @@
 pragma solidity ^0.4.2;
 
+import "../Controlled.sol";
 
-contract Canvas {
+contract Canvas is Controlled {
   // TODO: add more colors
   enum Color {
     Black,
@@ -20,18 +21,21 @@ contract Canvas {
   uint128 constant MIN_SIZE = 3;
   uint128 size = MIN_SIZE;
 
-  function enlarge() external {
+  function enlarge() onlyUser("grower") external {
     size += 2;
   }
 
-  function shrink() external {
+  function shrink() onlyUser("grower") external {
     if (size > MIN_SIZE)
       size -= 2;
   }
 
-  function draw(uint128 x, uint128 y, Color color) external {
+  function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work) onlyUser("throttle") external {
     var pos = getPos(x, y);
     canvas[pos].color = color;
+    canvas[pos].painter = painter;
+    canvas[pos].work = work;
+    canvas[pos].paintedAt = now;
   }
 
   function getPixel(uint128 x, uint128 y) external returns (Color, address, bytes32, uint) {

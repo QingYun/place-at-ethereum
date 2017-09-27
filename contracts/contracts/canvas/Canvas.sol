@@ -44,6 +44,9 @@ contract Canvas is Controlled {
   }
 
   function getPos(uint128 x, uint128 y) internal returns (uint) {
+    require(x >= 0 && x < size);
+    require(y >= 0 && y < size);
+
     var mid = size / 2;
     int128 _x = int128(x - mid);   
     int128 _y = int128(y - mid);   

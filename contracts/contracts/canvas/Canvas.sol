@@ -1,36 +1,32 @@
 pragma solidity ^0.4.2;
 
 import "../Module.sol";
+import "./ICanvas.sol";
 
-contract Canvas is Module {
-  // TODO: add more colors
-  enum Color {
-    Black,
-    White
-  }
-
-  struct Pixel {
-    Color color;
-    address painter;
-    bytes32 work;
-    uint paintedAt;
-  }
-
+contract Canvas is Module, ICanvas {
   mapping (uint => Pixel) canvas;
 
   uint128 constant MIN_SIZE = 3;
-  uint128 public size = MIN_SIZE;
+  uint128 size = MIN_SIZE;
 
-  function enlarge() onlyModule("grower") external {
+  function getSize() returns (uint128) { return size; }
+
+  function enlarge() external {
+    require(calledBy("grower"));
+
     size += 2;
   }
 
-  function shrink() onlyModule("grower") external {
+  function shrink() external {
+    require(calledBy("grower"));
+
     if (size > MIN_SIZE)
       size -= 2;
   }
 
-  function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work) onlyModule("throttle") external {
+  function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work) external {
+    require(calledBy("throttle"));
+
     var pos = getPos(x, y);
     canvas[pos].color = color;
     canvas[pos].painter = painter;

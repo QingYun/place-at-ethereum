@@ -9,7 +9,8 @@ contract TestModule is Module {
     value = v;
   }
 
-  function getValue() onlyModule("getter") external returns (string) {
+  function getValue() external returns (string) {
+    require(calledBy("getter"));
     return value;
   }
 }

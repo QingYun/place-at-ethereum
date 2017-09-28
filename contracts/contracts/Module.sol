@@ -9,8 +9,12 @@ contract Module {
   }
 
   modifier onlyModule(string module) {
-    require(modules[module] == msg.sender);
+    require(calledBy(module));
     _;
+  }
+
+  function calledBy(string module) returns (bool) {
+    return modules[module] == msg.sender;
   }
 
   function setModule(string module, address addr) onlyModule("admin") {

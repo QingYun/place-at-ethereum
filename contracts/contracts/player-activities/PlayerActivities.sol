@@ -1,11 +1,11 @@
 pragma solidity ^0.4.2;
 
-import "../Controlled.sol";
+import "../Module.sol";
 
-contract PlayerAcitivies is Controlled {
+contract PlayerActivities is Module {
   mapping (address => uint) lastPaintingAt;
 
-  function recordPainting(address player) onlyUser("throttle") external {
+  function recordPainting(address player) onlyModule("throttle") external {
     lastPaintingAt[player] = now;
   }
 

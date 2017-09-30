@@ -22,22 +22,22 @@ contract("Module", (accounts) => {
     return TestModule.new().then((ins) => {
       test = ins;
     }).then(() => {
-      return test.setModule("setter", accounts[1]);
+      return test.setModule("setter", accounts[0]);
     }).then(() => {
-      return test.setModule("getter", accounts[2]);
+      return test.setModule("getter", accounts[1]);
     }).then(() => {
-      return test.setValue("test value", { from: accounts[1] })
+      return test.setValue("test value", { from: accounts[0] })
         .catch(() => assert(false, "should be able to set by the setter"));
     }).then(() => {
-      return test.setValue("test value", { from: accounts[2] })
+      return test.setValue("test value", { from: accounts[1] })
         .then(() => assert(false, "should not be able to set by the getter"))
         .catch(() => {})
     }).then(() => {
-      return test.getValue.call({ from: accounts[1] })
+      return test.getValue({ from: accounts[0] })
         .then(() => assert(false, "should not be able to call by the setter"))
         .catch(() => {})
     }).then(() => {
-      return test.getValue.call({ from: accounts[2] })
+      return test.getValue({ from: accounts[1] })
         .catch((e) => assert(false, "should be able to call by the getter " + e));
     })
   });

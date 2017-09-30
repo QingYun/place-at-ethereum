@@ -17,6 +17,7 @@ contract Throttle is Module, IThrottle {
     IGrower(getModule("grower")).sawPainting(x, y, color);
     IPlayerActivities(getModule("player-activities")).recordPainting(msg.sender);
     ICanvas(getModule("canvas")).draw(x, y, color, msg.sender, work);
+    LogDraw(x, y, color, msg.sender);
   }
 
   function getTarget(uint128 x, uint128 y, ICanvas.Color color, uint at) external returns (bytes32) {

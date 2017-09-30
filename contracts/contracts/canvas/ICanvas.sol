@@ -14,6 +14,8 @@ contract ICanvas {
     uint paintedAt;
   }
 
+  event LogResize(uint128 from, uint128 to);
+
   function getSize() returns (uint128);
   function enlarge() external;
   function shrink() external;

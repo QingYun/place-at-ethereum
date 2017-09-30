@@ -7,6 +7,7 @@ contract Canvas is Module, ICanvas {
   mapping (uint => Pixel) canvas;
 
   uint128 constant MIN_SIZE = 3;
+  uint128 constant RESIZE_STEP = 2;
   uint128 size = MIN_SIZE;
 
   function getSize() returns (uint128) { return size; }
@@ -14,14 +15,17 @@ contract Canvas is Module, ICanvas {
   function enlarge() external {
     require(calledBy("grower"));
 
-    size += 2;
+    LogResize(size, size + RESIZE_STEP);
+    size += RESIZE_STEP;
   }
 
   function shrink() external {
     require(calledBy("grower"));
 
-    if (size > MIN_SIZE)
-      size -= 2;
+    if (size > MIN_SIZE) {
+      LogResize(size, size - RESIZE_STEP);
+      size -= RESIZE_STEP;
+    }
   }
 
   function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work) external {

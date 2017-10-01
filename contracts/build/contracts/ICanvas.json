@@ -1,0 +1,118 @@
+{
+  "contract_name": "ICanvas",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "x",
+          "type": "uint128"
+        },
+        {
+          "name": "y",
+          "type": "uint128"
+        }
+      ],
+      "name": "getPixel",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint8"
+        },
+        {
+          "name": "",
+          "type": "address"
+        },
+        {
+          "name": "",
+          "type": "bytes32"
+        },
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "shrink",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "enlarge",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "x",
+          "type": "uint128"
+        },
+        {
+          "name": "y",
+          "type": "uint128"
+        },
+        {
+          "name": "color",
+          "type": "uint8"
+        },
+        {
+          "name": "painter",
+          "type": "address"
+        },
+        {
+          "name": "work",
+          "type": "bytes32"
+        }
+      ],
+      "name": "draw",
+      "outputs": [],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "getSize",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint128"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "from",
+          "type": "uint128"
+        },
+        {
+          "indexed": false,
+          "name": "to",
+          "type": "uint128"
+        }
+      ],
+      "name": "LogResize",
+      "type": "event"
+    }
+  ],
+  "unlinked_binary": "0x",
+  "networks": {},
+  "schema_version": "0.0.5",
+  "updated_at": 1506837457387
+}

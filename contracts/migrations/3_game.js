@@ -10,9 +10,12 @@ module.exports = function(deployer) {
     Grower,
     PlayerActivities,
     Throttle
-  ].map(d => d.new());
+  ].map(d => { 
+    deployer.deploy(d);
+    return d.deployed()
+  }).concat(Gateway.deployed());
 
-  Promise.all(deployments.concat(Gateway.deployed())).then(([canvas, grower, playerActivities, throttle, gateway]) => {
+  Promise.all(deployments).then(([canvas, grower, playerActivities, throttle, gateway]) => {
     return Promise.all([
       gateway.setModule("throttle", throttle.address),
       gateway.setModule("grower", grower.address),
@@ -23,5 +26,5 @@ module.exports = function(deployer) {
 
       grower.setModule("canvas", canvas.address),
     ]);
-  })
+  }).catch(e => console.error(e))
 };

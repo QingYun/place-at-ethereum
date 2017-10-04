@@ -12,12 +12,12 @@ contract Throttle is Module, IThrottle {
     var target = getTargetImpl(x, y, color, now, prevWork);
     var work = keccak256(color, prevWork, nonce);
 
-    require(work < target);
+    //require(work < target);
 
     IGrower(getModule("grower")).sawPainting(x, y, color);
     IPlayerActivities(getModule("player-activities")).recordPainting(msg.sender);
     ICanvas(getModule("canvas")).draw(x, y, color, msg.sender, work);
-    LogDraw(x, y, color, msg.sender);
+    LogDrawThrottle(x, y, color, msg.sender);
   }
 
   function getTarget(uint128 x, uint128 y, ICanvas.Color color, uint at) external returns (bytes32) {

@@ -15,6 +15,8 @@ contract ICanvas {
   }
 
   event LogResize(uint128 from, uint128 to);
+  event LogDraw(uint128 x, uint128 y, Color color, address painter, bytes32 work);
+  event LogGetPixel(uint128 x, uint128 y);
 
   function getSize() returns (uint128);
   function enlarge() external;

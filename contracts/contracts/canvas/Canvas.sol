@@ -32,14 +32,17 @@ contract Canvas is Module, ICanvas {
     require(calledBy("throttle"));
 
     var pos = getPos(x, y);
-    canvas[pos].color = color;
-    canvas[pos].painter = painter;
-    canvas[pos].work = work;
-    canvas[pos].paintedAt = now;
+    Pixel storage pixel = canvas[pos];
+    pixel.color = color;
+    pixel.painter = painter;
+    pixel.work = work;
+    pixel.paintedAt = now;
+    LogDraw(x, y, color, painter, work);
   }
 
   function getPixel(uint128 x, uint128 y) external returns (Color, address, bytes32, uint) {
     var pos = getPos(x, y);
+    LogGetPixel(x, y);
     return (canvas[pos].color, canvas[pos].painter, canvas[pos].work, canvas[pos].paintedAt);
   }
 

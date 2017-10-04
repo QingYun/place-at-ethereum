@@ -13,6 +13,7 @@
     "web3": "^1.0.0-beta.22"
   },
   "devDependencies": {
+    "ramda": "^0.24.1",
     "webpack": "^3.6.0"
   }
 }

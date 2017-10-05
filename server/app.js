@@ -10,6 +10,7 @@ provider.on('connect', () => {
     return web3.eth.personal.unlockAccount(account, process.env.ACC_PASS, 0);
   }).then(() => {
     const contracts = require('./contracts')(web3);
+    require('./http_server')();
 
     contracts
       .Gateway.methods.draw(1, 1, 1, web3.utils.padLeft('0x123', 32)).send({ from: account })

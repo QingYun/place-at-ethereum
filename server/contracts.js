@@ -22,7 +22,7 @@ module.exports = (web3) => {
           R.head, 
           R.filter(R.eqProps('updated_at', spec)), 
           R.values)(spec.networks),
-        { gas: 999999 }
+        { gas: 4712357 }
       )
     ]
   ))

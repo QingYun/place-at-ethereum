@@ -28,22 +28,23 @@ contract Canvas is Module, ICanvas {
     }
   }
 
-  function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work) external {
+  function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work, uint8 difficulty) external {
     require(calledBy("throttle"));
 
     var pos = getPos(x, y);
     Pixel storage pixel = canvas[pos];
     pixel.color = color;
     pixel.painter = painter;
-    pixel.work = work;
     pixel.paintedAt = now;
-    LogDraw(x, y, color, painter, work);
+    pixel.work = work;
+    pixel.difficulty = difficulty;
+    LogDraw(x, y, color, painter, work, difficulty);
   }
 
-  function getPixel(uint128 x, uint128 y) external returns (Color, address, bytes32, uint) {
+  function getPixel(uint128 x, uint128 y) external returns (Color, address, uint8, bytes32, uint) {
     var pos = getPos(x, y);
     LogGetPixel(x, y);
-    return (canvas[pos].color, canvas[pos].painter, canvas[pos].work, canvas[pos].paintedAt);
+    return (canvas[pos].color, canvas[pos].painter, canvas[pos].difficulty, canvas[pos].work, canvas[pos].paintedAt);
   }
 
   function getPos(uint128 x, uint128 y) internal returns (uint) {

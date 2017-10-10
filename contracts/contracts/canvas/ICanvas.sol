@@ -23,5 +23,5 @@ contract ICanvas {
   function enlarge() external;
   function shrink() external;
   function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work, uint8 difficulty) external;
-  function getPixel(uint128 x, uint128 y) external returns (Color, address, uint8, bytes32, uint);
+  function getPixel(uint128 x, uint128 y) external returns (Color color, address painter, uint8 difficulty, bytes32 work, uint paintedAt);
 }

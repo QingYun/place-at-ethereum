@@ -7,8 +7,9 @@ import "../grower/IGrower.sol";
 import "../player-activities/IPlayerActivities.sol";
 
 contract Throttle is Module, IThrottle {
-  uint constant INTERVAL = 5 minutes;
+  uint constant INTERVAL = 10 seconds;
 
+  event LogNewDifficulty(uint d);
   function draw(uint128 x, uint128 y, ICanvas.Color color, bytes32 nonce) external {
     var (_, __, difficulty, prevWork, paintedAt) = ICanvas(getModule("canvas")).getPixel(x, y);
     var shift = calculateDifficultyImpl(x, y, color, paintedAt, now, difficulty);
@@ -21,10 +22,11 @@ contract Throttle is Module, IThrottle {
     var newDifficulty = uint(shift) * 2;
     if (newDifficulty > 255)
       newDifficulty = 255;
+    LogNewDifficulty(newDifficulty);
 
     IGrower(getModule("grower")).sawPainting(x, y, color);
     IPlayerActivities(getModule("player-activities")).recordPainting(msg.sender);
-    ICanvas(getModule("canvas")).draw(x, y, color, msg.sender, work, uint8(newDifficulty));
+    ICanvas(getModule("canvas")).draw(x, y, color, msg.sender, work, uint8(newDifficulty + 1));
     LogDraw(x, y, color, msg.sender, shift);
   }
 

@@ -1,18 +1,18 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
+    <div v-for="row in canvas">
+      <span v-for="pixel in row">{{pixel}} </span>
+    </div>
     <router-view></router-view>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
+
 export default {
   name: 'app',
-  beforeCreate: () => {
-    const wsc = new WebSocket('ws://localhost:8080', 'place-watcher-protocol');
-    wsc.onopen = () => console.log('opened');
-    wsc.onmessage = event => console.log(event.data);
-  },
+  computed: mapState(['canvas']),
 };
 </script>
 

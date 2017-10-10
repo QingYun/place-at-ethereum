@@ -6,7 +6,7 @@ import "./ICanvas.sol";
 contract Canvas is Module, ICanvas {
   mapping (uint => Pixel) canvas;
 
-  uint128 constant MIN_SIZE = 3;
+  uint128 constant MIN_SIZE = 5;
   uint128 constant RESIZE_STEP = 2;
   uint128 size = MIN_SIZE;
 
@@ -41,7 +41,7 @@ contract Canvas is Module, ICanvas {
     LogDraw(x, y, color, painter, work, difficulty);
   }
 
-  function getPixel(uint128 x, uint128 y) external returns (Color, address, uint8, bytes32, uint) {
+  function getPixel(uint128 x, uint128 y) external returns (Color color, address painter, uint8 difficulty, bytes32 work, uint paintedAt) {
     var pos = getPos(x, y);
     LogGetPixel(x, y);
     return (canvas[pos].color, canvas[pos].painter, canvas[pos].difficulty, canvas[pos].work, canvas[pos].paintedAt);

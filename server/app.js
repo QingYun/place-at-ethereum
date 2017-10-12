@@ -16,33 +16,9 @@ provider.on('connect', async () => {
 
   contracts = require('./contracts')(web3);
   const canvas = await require('./canvas')(contracts);
-
-  require('./http_server')(server);
-  require('./ws_server')(server, canvas);
-  server.listen(8081, () => console.log('server listening on 8081'))
-
   const draw = require('./draw')(contracts, account);
 
-  console.log(canvas.getPoints());
-  canvas.onColorChange((x, y, c, oc) => logger.trace('Pixel (%d, %d) changed from [%d] to [%d]', x, y, oc, c))
-
-  let size = canvas.getSize();
-  canvas.onResize(ns => size = ns);
-
-  const paint = async (x, y) => {
-    if (y >= size) {
-      y = 0;
-      x++;
-    }
-
-    if (x >= size) {
-      x = 0;
-      y = 0;
-    }
-
-    await draw(x, y, 1);
-    setTimeout(() => paint(x, y + 1), 1000);
-  }
-
-  paint(0, 0);
+  require('./http_server')(server, draw);
+  require('./ws_server')(server, canvas);
+  server.listen(8081, () => console.log('server listening on 8081'));
 });

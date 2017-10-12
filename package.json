@@ -7,11 +7,14 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server/app.js",
     "build-client": "node client/build/build.js",
+    "dev-server": "node client/build/dev-server.js",
     "lint-client": "eslint --ext .js,.vue client/src"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
     "express": "^4.16.1",
     "pino": "^4.7.2",
     "ramda": "^0.24.1",
@@ -19,6 +22,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",
+    "axios": "^0.16.2",
     "babel-core": "^6.22.1",
     "babel-eslint": "^7.1.1",
     "babel-loader": "^7.1.1",

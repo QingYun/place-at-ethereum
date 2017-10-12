@@ -1,9 +1,10 @@
 <template>
   <g>
-    <g v-for="(row, y) in canvas" :key="`row_${y}`">
-      <Pixel v-for="(color, x) in row" :key="`pixel_${x}_${y}`"
-        :x="x * pixelWidth" :y="y * pixelHeight" :color="color" 
+    <g v-for="(row, rowIdx) in canvas" :key="`row_${rowIdx}`">
+      <Pixel v-for="(color, colIdx) in row" :key="`pixel_${colIdx}_${rowIdx}`"
+        :x="colIdx * pixelWidth" :y="rowIdx * pixelHeight" :color="color" 
         :width="pixelWidth" :height="pixelHeight"
+        @click="drawPixel(rowIdx, colIdx)"
       />
     </g>
   </g>
@@ -13,6 +14,7 @@
 import { mapState } from 'vuex';
 import Pixel from './Pixel';
 import { colorToRGB } from '../utils/color';
+import draw from '../api/draw';
 
 export default {
   name: 'Matrix',
@@ -34,6 +36,11 @@ export default {
         return state.canvas.map(row => row.map(colorToRGB));
       },
     }),
+  },
+  methods: {
+    drawPixel(x, y) {
+      draw(x, y, 1);
+    },
   },
 };
 </script>

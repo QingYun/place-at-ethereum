@@ -24,7 +24,7 @@ new Vue({
 });
 
 
-const wsc = new WebSocket('ws://localhost:8080', 'place-watcher-protocol');
+const wsc = new WebSocket('ws://localhost:8081', 'place-watcher-protocol');
 wsc.onopen = () => logger.info('WebSocket opened');
 wsc.onmessage = (evt) => {
   const msg = JSON.parse(evt.data);

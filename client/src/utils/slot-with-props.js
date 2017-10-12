@@ -1,11 +1,12 @@
 import { merge, omit, propOr } from 'ramda';
 
 export default {
-  render(createElement) {
+  render() {
     const [slot] = this.$slots.default;
     const props = merge(
       propOr({}, 'propsData', slot.componentOptions),
-      omit(this.$attrs, ['node', 'id']));
-    return createElement(slot.tag, props, slot.children);
+      omit(['node', 'id'], this.$attrs));
+    slot.componentOptions.propsData = props;
+    return slot;
   },
 };

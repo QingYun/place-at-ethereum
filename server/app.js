@@ -19,7 +19,7 @@ provider.on('connect', async () => {
 
   require('./http_server')(server);
   require('./ws_server')(server, canvas);
-  server.listen(8080, () => console.log('server listening on 8080'))
+  server.listen(8081, () => console.log('server listening on 8081'))
 
   const draw = require('./draw')(contracts, account);
 

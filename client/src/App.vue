@@ -1,18 +1,23 @@
 <template>
   <div id="app">
-    <div v-for="row in canvas">
-      <span v-for="pixel in row">{{pixel}} </span>
-    </div>
+    <Graph :width="500" :height="500" :margin="50">
+      <rect></rect>
+    </Graph>
     <router-view></router-view>
   </div>
 </template>
 
 <script>
 import { mapState } from 'vuex';
+import Graph from './components/Graph';
 
 export default {
   name: 'app',
+  components: {
+    Graph,
+  },
   computed: mapState(['canvas']),
+  mounted() { console.log('App mounted!'); },
 };
 </script>
 

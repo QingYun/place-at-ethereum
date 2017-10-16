@@ -9,37 +9,97 @@ import "../player-activities/IPlayerActivities.sol";
 contract Throttle is Module, IThrottle {
   uint constant INTERVAL = 10 seconds;
 
-  event LogNewDifficulty(uint d);
   function draw(uint128 x, uint128 y, ICanvas.Color color, bytes32 nonce) external {
-    var (_, __, difficulty, prevWork, paintedAt) = ICanvas(getModule("canvas")).getPixel(x, y);
-    var shift = calculateDifficultyImpl(x, y, color, paintedAt, now, difficulty);
+    // TODO: time limit check
+
+    var canvas = ICanvas(getModule("canvas"));
+    var (oldColor, difficulty, prevWork, paintedAt) = canvas.getPixel(x, y);
+    var shift = calculateDifficultyImpl(paintedAt, now, difficulty, oldColor == color);
     var work = keccak256(color, prevWork, nonce);
 
     require(work < (bytes32(-1) >> shift));
-    // TODO: time limit check
 
-    // TODO: a better growing step
-    var newDifficulty = uint(shift) * 2;
-    if (newDifficulty > 255)
-      newDifficulty = 255;
-    LogNewDifficulty(newDifficulty);
+    redistDifficulties(x, y);
 
     IGrower(getModule("grower")).sawPainting(x, y, color);
     IPlayerActivities(getModule("player-activities")).recordPainting(msg.sender);
-    ICanvas(getModule("canvas")).draw(x, y, color, msg.sender, work, uint8(newDifficulty + 1));
-    LogDraw(x, y, color, msg.sender, shift);
+    canvas.setColor(x, y, color);
+    canvas.setWork(x, y, work);
+    LogDraw(x, y, color, shift);
   }
 
-  function calculateDifficulty(uint128 x, uint128 y, ICanvas.Color color, uint at) external returns (uint8 difficulty, bytes32 prevWork) {
-    var (_, __, d, work, paintedAt) = ICanvas(getModule("canvas")).getPixel(x, y);
-    return (calculateDifficultyImpl(x, y, color, paintedAt, at, d), work);
+  function calculateDifficulty(uint128 x, uint128 y, ICanvas.Color color, uint at) external returns (uint8) {
+    var (oldColor, difficulty,, paintedAt) = ICanvas(getModule("canvas")).getPixel(x, y);
+    return calculateDifficultyImpl(paintedAt, at, difficulty, color == oldColor);
   }
 
-  event LogCalculateDifficultyImpl(uint128 x, uint128 y, ICanvas.Color color, uint paintedAt, uint at, uint8 difficulty, int newDifficulty);
-  function calculateDifficultyImpl(
-    uint128 x, uint128 y, ICanvas.Color color, uint paintedAt, uint at, uint8 difficulty) internal returns (uint8) {
+  function redistDifficulties(uint128 x, uint128 y) private {
+    var canvas = ICanvas(getModule("canvas"));
 
-    // TODO: improved algorithm
+    var (xl, xh, yl, yh) = getRedistRange(x, y);
+
+    var xs = new uint128[](uint((xh - xl) * (yh - yl)));
+    var ys = new uint128[](uint((xh - xl) * (yh - yl)));
+    var ds = new uint8[](uint((xh - xl) * (yh - yl)));
+
+    for (int i = xl; i < xh; i++) {
+      for (int j = yl; j < yh; j++) {
+        xs[uint(i * (xh - xl) + j)] = uint128(i);
+        ys[uint(i * (xh - xl) + j)] = uint128(j);
+        ds[uint(i * (xh - xl) + j)] = getRedistDifficulty(canvas, i, j, x, y);
+      }
+    }
+
+    canvas.setDifficulties(xs, ys, ds, now);
+  }
+
+  function getRedistDifficulty(ICanvas canvas, int x, int y, uint128 cx, uint128 cy) private returns (uint8) {
+    var disX = x - cx;
+    if (disX < 0)
+      disX = -disX;
+
+    var disY = y - cy;
+    if (disY < 0)
+      disY = -disY;
+
+    var dis = disX;
+    if (disY > dis)
+      dis = disY;
+
+    var inc = 4 - dis;
+
+    var (,, oldDifficulty,, lastAction) = canvas.getPixel(uint128(x), uint128(y));
+    var newDifficulty = int(calculateDifficultyImpl(lastAction, now, oldDifficulty, false)) + inc;
+
+    if (newDifficulty > 255)
+      newDifficulty = 255;
+
+    return uint8(newDifficulty);
+  }
+
+  function getRedistRange(uint128 x, uint128 y) private returns (int xl, int xh, int yl, int yh) {
+    var canvas = ICanvas(getModule("canvas"));
+    var size = canvas.getSize();
+    
+    xl = int(x) - 3;
+    if (xl < 0)
+      xl = 0;
+
+    xh = int(x) + 4;
+    if (xh > size)
+      xh = size;
+
+    yl = int(y) - 3;
+    if (yl < 0)
+      yl = 0;
+
+    yh = int(y) + 4;
+    if (yh > size)
+      yh = size;
+  }
+
+  function calculateDifficultyImpl(uint paintedAt, uint at, uint8 difficulty, bool easy) private returns (uint8) {
+
     require(paintedAt < at);
 
     var d = difficulty;
@@ -48,10 +108,15 @@ contract Throttle is Module, IThrottle {
 
     var shift = int(d - (((at - paintedAt) * d) / (2 * INTERVAL)));
 
+    // make it easier for defending (painting it to the same color)
+    if (easy)
+      shift -= 1;
+
     if (shift < 0)
       shift = 0;
 
-    LogCalculateDifficultyImpl(x, y, color, paintedAt, at, difficulty, shift);
+    // the original difficulty will not greater than 255 (see draw())
+    // so it's safe to convert shift(d - some positive number) to a uint8
     return uint8(shift);
   }
 }

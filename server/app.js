@@ -14,9 +14,13 @@ provider.on('connect', async () => {
   account = accounts[process.env.ACC_INDEX];
   //await web3.eth.personal.unlockAccount(account, process.env.ACC_PASS, 0);
 
+  console.log('getting contracts')
+
   contracts = require('./contracts')(web3);
   const canvas = await require('./canvas')(contracts);
   const draw = require('./draw')(contracts, account);
+
+  console.log('starting up servers')
 
   require('./http_server')(server, draw);
   require('./ws_server')(server, canvas);

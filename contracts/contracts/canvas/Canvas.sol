@@ -28,26 +28,40 @@ contract Canvas is Module, ICanvas {
     }
   }
 
-  function draw(uint128 x, uint128 y, Color color, address painter, bytes32 work, uint8 difficulty) external {
+  function setColor(uint128 x, uint128 y, Color color) external {
     require(calledBy("throttle"));
 
     var pos = getPos(x, y);
-    Pixel storage pixel = canvas[pos];
-    pixel.color = color;
-    pixel.painter = painter;
-    pixel.paintedAt = now;
-    pixel.work = work;
-    pixel.difficulty = difficulty;
-    LogDraw(x, y, color, painter, work, difficulty);
+    canvas[pos].color = color;
+    LogUpdateColor(x, y, color);
   }
 
-  function getPixel(uint128 x, uint128 y) external returns (Color color, address painter, uint8 difficulty, bytes32 work, uint paintedAt) {
+  function setDifficulties(uint128[] xs, uint128[] ys, uint8[] ds, uint paintedAt) external {
+    require(calledBy("throttle"));
+    require(xs.length == ys.length && xs.length == ds.length);
+
+    for (uint i = 0; i < xs.length; i++) {
+      var pos = getPos(xs[i], ys[i]);
+      canvas[pos].difficulty = ds[i];
+      canvas[pos].paintedAt = paintedAt;
+    }
+    LogUpdateDifficulties(xs, ys, ds, paintedAt);
+  }
+
+  function setWork(uint128 x, uint128 y, bytes32 work) external {
+    require(calledBy("throttle"));
+
     var pos = getPos(x, y);
-    LogGetPixel(x, y);
-    return (canvas[pos].color, canvas[pos].painter, canvas[pos].difficulty, canvas[pos].work, canvas[pos].paintedAt);
+    canvas[pos].work = work;
+    LogUpdateWork(x, y, work);
   }
 
-  function getPos(uint128 x, uint128 y) internal returns (uint) {
+  function getPixel(uint128 x, uint128 y) external returns (Color color, uint8 difficulty, bytes32 work, uint paintedAt) {
+    var pos = getPos(x, y);
+    return (canvas[pos].color, canvas[pos].difficulty, canvas[pos].work, canvas[pos].paintedAt);
+  }
+
+  function getPos(uint128 x, uint128 y) private returns (uint) {
     require(x >= 0 && x < size);
     require(y >= 0 && y < size);
 

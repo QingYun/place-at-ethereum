@@ -17,7 +17,7 @@ contract Throttle is Module, IThrottle {
     var shift = calculateDifficultyImpl(paintedAt, now, difficulty, oldColor == color);
     var work = keccak256(color, prevWork, nonce);
 
-    require(work < (bytes32(-1) >> shift));
+    require(work >= (bytes32(-1) >> shift));
 
     redistDifficulties(x, y);
 
@@ -42,11 +42,11 @@ contract Throttle is Module, IThrottle {
     var ys = new uint128[](uint((xh - xl) * (yh - yl)));
     var ds = new uint8[](uint((xh - xl) * (yh - yl)));
 
-    for (int i = xl; i < xh; i++) {
-      for (int j = yl; j < yh; j++) {
-        xs[uint(i * (xh - xl) + j)] = uint128(i);
-        ys[uint(i * (xh - xl) + j)] = uint128(j);
-        ds[uint(i * (xh - xl) + j)] = getRedistDifficulty(canvas, i, j, x, y);
+    for (int i = 0; i < yh - yl; i++) {
+      for (int j = 0; j < xh - xl; j++) {
+        xs[uint(i * (xh - xl) + j)] = uint128(j + xl);
+        ys[uint(i * (xh - xl) + j)] = uint128(i + yl);
+        ds[uint(i * (xh - xl) + j)] = getRedistDifficulty(canvas, j + xl, i + yl, x, y);
       }
     }
 
@@ -54,15 +54,15 @@ contract Throttle is Module, IThrottle {
   }
 
   function getRedistDifficulty(ICanvas canvas, int x, int y, uint128 cx, uint128 cy) private returns (uint8) {
-    var disX = x - cx;
+    int disX = x - cx;
     if (disX < 0)
       disX = -disX;
 
-    var disY = y - cy;
+    int disY = y - cy;
     if (disY < 0)
       disY = -disY;
 
-    var dis = disX;
+    int dis = disX;
     if (disY > dis)
       dis = disY;
 

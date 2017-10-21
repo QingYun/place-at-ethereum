@@ -9,6 +9,7 @@ import "../player-activities/IPlayerActivities.sol";
 contract Throttle is Module, IThrottle {
   uint constant INTERVAL = 10 seconds;
 
+  event LogErrorDraw(uint128 x, uint128 y, ICanvas.Color color, bytes32 prevWork, bytes32 nonce, bytes32 work, uint8 difficulty);
   function draw(uint128 x, uint128 y, ICanvas.Color color, bytes32 nonce) external {
     // TODO: time limit check
 
@@ -17,7 +18,11 @@ contract Throttle is Module, IThrottle {
     var shift = calculateDifficultyImpl(paintedAt, now, difficulty, oldColor == color);
     var work = keccak256(color, prevWork, nonce);
 
-    require(work >= (bytes32(-1) >> shift));
+    if (work >= (bytes32(-1) >> shift)) {
+      LogErrorDraw(x, y, color, prevWork, nonce, work, shift);
+      return;
+    }
+    LogErrorDraw(x, y, color, prevWork, 123, work, shift);
 
     redistDifficulties(x, y);
 

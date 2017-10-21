@@ -18,7 +18,7 @@ provider.on('connect', async () => {
 
   contracts = require('./contracts')(web3);
   const canvas = await require('./canvas')(contracts);
-  const draw = require('./draw')(contracts, account);
+  const draw = require('./draw')(contracts, account, canvas);
 
   console.log('starting up servers')
 

@@ -12,6 +12,7 @@
 
 <script>
 import { mapState } from 'vuex';
+import { prop, compose, map } from 'ramda';
 import Pixel from './Pixel';
 import { colorToRGB } from '../utils/color';
 import draw from '../api/draw';
@@ -32,9 +33,7 @@ export default {
       return this.height / this.canvas.length;
     },
     ...mapState({
-      canvas(state) {
-        return state.canvas.map(row => row.map(colorToRGB));
-      },
+      canvas: compose(map(map(compose(colorToRGB, prop('color')))), prop('canvas')),
     }),
   },
   methods: {

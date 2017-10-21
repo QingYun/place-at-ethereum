@@ -20,7 +20,8 @@ module.exports = (server, canvas) => {
     wss.connections.forEach(c => c.sendUTF(JSON.stringify({
       action: 'UPDATE_PIXEL',
       payload: {
-        x, y, color,
+        x, y, 
+        attr: { color, },
       },
     })))
   });

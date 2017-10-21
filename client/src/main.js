@@ -28,6 +28,7 @@ const wsc = new WebSocket('ws://localhost:8081', 'place-watcher-protocol');
 wsc.onopen = () => logger.info('WebSocket opened');
 wsc.onmessage = (evt) => {
   const msg = JSON.parse(evt.data);
+  console.log(msg);
   switch (msg.action) {
     case 'INIT_CANVAS':
       store.commit('initCanvas', msg.payload);

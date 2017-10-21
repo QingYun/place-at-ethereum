@@ -25,12 +25,12 @@ module.exports = (contracts, account, canvas) => async function draw (x, y, colo
     let nonce = -1;
 
     while (nonce === -1) {
-      difficulty = Math.max(0, canvas.getDifficulty(x, y) - (color == canvas.getPoint(x, y)));
+      difficulty = Math.max(0, canvas.getDifficulty(x, y) - (color == canvas.getPoint(x, y).color));
       target = toBN(2)
         .pow(toBN(256))
         .subn(1)
-        .ushrn(parseInt(difficulty, 10));
-      nonce = tryFindNonce(color, target, canvas.getPrevWork(x, y));
+        .ushrn(difficulty);
+      nonce = tryFindNonce(color, target, canvas.getPoint(x, y).work);
     }
 
     logger.info('Done work for pixel (%d, %d). \nnonce\t= %d\ntarget\t= %s', 

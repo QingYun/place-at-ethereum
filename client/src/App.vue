@@ -1,7 +1,10 @@
 <template>
   <div id="app" v-if="canvas">
     <Graph :width="500" :height="500" :margin="50">
-      <Matrix />
+      <CanvasMatrix />
+    </Graph>
+    <Graph :width="500" :height="500" :margin="50">
+      <DifficultyMatrix />
     </Graph>
     <router-view></router-view>
   </div>
@@ -12,16 +15,21 @@
 
 <script>
 import { mapState } from 'vuex';
+import { prop } from 'ramda';
 import Graph from './components/Graph';
-import Matrix from './components/Matrix';
+import CanvasMatrix from './components/CanvasMatrix';
+import DifficultyMatrix from './components/DifficultyMatrix';
 
 export default {
   name: 'app',
   components: {
     Graph,
-    Matrix,
+    CanvasMatrix,
+    DifficultyMatrix,
   },
-  computed: mapState(['canvas']),
+  computed: mapState({
+    canvas: prop('canvas'),
+  }),
 };
 </script>
 

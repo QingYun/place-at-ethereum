@@ -61,12 +61,13 @@ module.exports = async (contracts) => {
 
   let onDifficultyChange = [];
   contracts.Canvas.events.LogUpdateDifficulties({}, (err, { returnValues: { x, y, difficulty, paintedAt }}) => {
+    paintedAt = parse(paintedAt);
     zip(zip(x, y), difficulty).map(unnest).map(map(parse)).forEach(([x, y, d]) => {
       const oldPoint = canvas[x][y];
-      logger.info('Difficulty change of pixel (%d, %d): [%d] at [%s] => [%d] at [%s]', x, y, oldPoint.difficulty, oldPoint.paintedAt, d, paintedAt);
+      logger.info('Difficulty change of pixel (%d, %d): [%d] at [%d] => [%d] at [%d]', x, y, oldPoint.difficulty, oldPoint.paintedAt, d, paintedAt);
       oldPoint.difficulty = d;
       oldPoint.paintedAt = paintedAt;
-      onDifficultyChange.forEach(cb => cb(x, y, difficulty, paintedAt));
+      onDifficultyChange.forEach(cb => cb(x, y, d, paintedAt));
     });
   });
 

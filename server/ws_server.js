@@ -23,7 +23,17 @@ module.exports = (server, canvas) => {
         x, y, 
         attr: { color, },
       },
-    })))
+    })));
+  });
+
+  canvas.onDifficultyChange((x, y, difficulty, paintedAt) => {
+    wss.connections.forEach(c => c.sendUTF(JSON.stringify({
+      action: 'UPDATE_PIXEL',
+      payload: {
+        x, y, 
+        attr: { difficulty, paintedAt, },
+      },
+    })));
   });
 
   canvas.onResize((oldSize, newSize) => {

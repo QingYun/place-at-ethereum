@@ -22,11 +22,11 @@ export default {
   computed: {
     pixelWidth() {
       if (!this.data) return 0;
-      return this.width / this.data[0].length;
+      return Math.floor(this.width / this.data[0].length);
     },
     pixelHeight() {
       if (!this.data) return 0;
-      return this.height / this.data.length;
+      return Math.floor(this.height / this.data.length);
     },
   },
 };

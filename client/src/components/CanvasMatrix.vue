@@ -2,15 +2,15 @@
   <Matrix 
     :data="matrix" 
     :onClick="onPixelClick"
+    :selected="selected"
     v-bind="$props" />
 </template>
 
 <script>
-import { mapState } from 'vuex';
+import { mapState, mapMutations } from 'vuex';
 import { prop, compose, map } from 'ramda';
 import Matrix from './Matrix';
 import { colorToRGB } from '../utils/color';
-import draw from '../api/draw';
 
 export default {
   name: 'CanvasMatrix',
@@ -20,11 +20,13 @@ export default {
   },
   computed: mapState({
     matrix: compose(map(map(compose(colorToRGB, prop('color')))), prop('canvas')),
+    selected: prop('selectedPixel'),
   }),
   methods: {
     onPixelClick(x, y) {
-      draw(x, y, 1);
+      this.selectPixel({ x, y });
     },
+    ...mapMutations(['selectPixel']),
   },
 };
 </script>

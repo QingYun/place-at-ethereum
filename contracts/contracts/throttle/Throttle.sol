@@ -9,8 +9,8 @@ import "../player-activities/IPlayerActivities.sol";
 contract Throttle is Module, IThrottle {
   uint constant INTERVAL = 10 seconds;
 
-  event LogErrorDraw(uint128 x, uint128 y, ICanvas.Color color, bytes32 prevWork, bytes32 nonce, bytes32 work, uint8 difficulty);
-  function draw(uint128 x, uint128 y, ICanvas.Color color, bytes32 nonce) external {
+  event LogErrorDraw(uint128 x, uint128 y, uint8 color, bytes32 prevWork, bytes32 nonce, bytes32 work, uint8 difficulty);
+  function draw(uint128 x, uint128 y, uint8 color, bytes32 nonce) external {
     // TODO: time limit check
 
     var canvas = ICanvas(getModule("canvas"));
@@ -33,7 +33,7 @@ contract Throttle is Module, IThrottle {
     LogDraw(x, y, color, shift);
   }
 
-  function calculateDifficulty(uint128 x, uint128 y, ICanvas.Color color, uint at) external returns (uint8) {
+  function calculateDifficulty(uint128 x, uint128 y, uint8 color, uint at) external returns (uint8) {
     var (oldColor, difficulty,, paintedAt) = ICanvas(getModule("canvas")).getPixel(x, y);
     return calculateDifficultyImpl(paintedAt, at, difficulty, color == oldColor);
   }

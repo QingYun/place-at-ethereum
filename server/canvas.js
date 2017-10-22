@@ -35,6 +35,8 @@ module.exports = async (contracts) => {
   logger.info('Initializing canvas at size [%d]', canvasSize);
   let canvas = await initCanvas(canvasSize);
 
+  console.log(canvas)
+
   let onResize = [];
   contracts.Canvas.events.LogResize({}, async (err, { returnValues }) => {
     const {from, to} = map(parse, returnValues);
@@ -54,8 +56,8 @@ module.exports = async (contracts) => {
       return;
     }
 
-    oldPoint.color = color;
     logger.info('Pixel (%d, %d) has been changed from [%d] to [%d]', x, y, oldPoint.color, color)
+    oldPoint.color = color;
     onColorChange.forEach(cb => cb(x, y, color, oldPoint.color));
   });
 

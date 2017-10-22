@@ -4,6 +4,8 @@
       id="canvas-matrix" 
       :width="canvasMatrixSize.width" 
       :height="canvasMatrixSize.height" 
+      :margin="30"
+      :marginRight="15"
       :style="{ top: '0', left: '0' }">
       <CanvasMatrix />
     </Graph>
@@ -11,10 +13,12 @@
       id="difficulty-matrix" 
       :width="difficultyMatrixSize.width" 
       :height="difficultyMatrixSize.height" 
+      :margin="30"
+      :marginLeft="15"
       :style="{ top: '0', right: '0' }">
       <DifficultyMatrix />
     </Graph>
-    <PixelCard :style="{ right: '0', bottom: '0', height: pixelCardSize.height, width: pixelCardSize.width }" />
+    <PixelCard :style="{ right: '30px', bottom: '30px', height: pixelCardSize.height, width: pixelCardSize.width }" />
     <router-view></router-view>
   </div>
   <div v-else>
@@ -89,8 +93,8 @@ export default {
     pixelCardSize() {
       const h = Math.floor(this.appStyleN.height - this.difficultyMatrixSize.height);
       return toPx({
-        width: this.difficultyMatrixSize.width,
-        height: h,
+        width: this.difficultyMatrixSize.width - 45,
+        height: h - 30,
       });
     },
     ...mapState({
@@ -108,9 +112,13 @@ export default {
 
 <style>
 
+html {
+  overflow: hidden;
+  background-color: #222;
+}
+
 body {
   margin: 0;
-  background-color: rgb(30,30,30);
 }
 
 #app {

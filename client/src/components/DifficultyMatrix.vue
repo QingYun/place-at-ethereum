@@ -9,10 +9,11 @@
 import { mapState } from 'vuex';
 import { compose, map } from 'ramda';
 import { scaleSequential } from 'd3-scale';
-import { interpolateRdYlGn } from 'd3-scale-chromatic';
+import { interpolateRdYlBu } from 'd3-scale-chromatic';
 import Matrix from './Matrix';
 
-const difficultyToRGB = scaleSequential(interpolateRdYlGn)
+const chooseColor = t => (t === 1 ? '#222' : interpolateRdYlBu(t));
+const difficultyToRGB = scaleSequential(chooseColor)
   .domain([30, 0]);
 
 const INTERVAL = 10;

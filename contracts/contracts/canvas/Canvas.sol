@@ -28,7 +28,7 @@ contract Canvas is Module, ICanvas {
     }
   }
 
-  function setColor(uint128 x, uint128 y, Color color) external {
+  function setColor(uint128 x, uint128 y, uint8 color) external {
     require(calledBy("throttle"));
 
     var pos = getPos(x, y);
@@ -56,7 +56,7 @@ contract Canvas is Module, ICanvas {
     LogUpdateWork(x, y, work);
   }
 
-  function getPixel(uint128 x, uint128 y) external returns (Color color, uint8 difficulty, bytes32 work, uint paintedAt) {
+  function getPixel(uint128 x, uint128 y) external returns (uint8 color, uint8 difficulty, bytes32 work, uint paintedAt) {
     var pos = getPos(x, y);
     return (canvas[pos].color, canvas[pos].difficulty, canvas[pos].work, canvas[pos].paintedAt);
   }

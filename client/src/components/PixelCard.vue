@@ -1,11 +1,68 @@
 <template>
-  <div class="pixel-card">
+  <div class="pixel-card" ref="card">
+    <Graph :width="graphSize" :height="graphSize" :margin="50" v-if="graphSize > 0">
+      <Matrix :data="colors" :onClick="onSelectColor" :selected="selectedColor" />
+    </Graph>
+
+    <div class="buttons" :class="{ active: isActive }" ref="buttons">
+      <h1 class="cancel" @click="cancelSelection">Cancel</h1><h1 class="draw" @click="drawPixel">Draw</h1>
+    </div>
+
   </div>
 </template>
 
 <script>
+import { mapState, mapMutations } from 'vuex';
+import { prop, splitEvery } from 'ramda';
+import Graph from './Graph';
+import Matrix from './Matrix';
+import draw from '../api/draw';
+import { colors } from '../utils/color';
+
 export default {
   name: 'PixelCard',
+  components: {
+    Graph, Matrix,
+  },
+  data: () => ({
+    activeTab: 0,
+    isMounted: false,
+    selectedColor: null,
+    colors: splitEvery(4, colors),
+  }),
+  computed: {
+    graphSize() {
+      if (!this.isMounted || !this.pixel || this.pixel.x === -1) return 0;
+      return Math.min(
+        this.$refs.card.clientWidth,
+        this.$refs.card.clientHeight - this.$refs.buttons.clientHeight,
+      );
+    },
+    isActive() {
+      return this.pixel.x !== -1;
+    },
+    ...mapState({
+      pixel: prop('selectedPixel'),
+    }),
+  },
+  methods: {
+    onSelectColor(x, y) {
+      this.selectedColor = { x, y };
+    },
+    drawPixel() {
+      const { x, y } = this.selectedColor;
+      draw(this.pixel.x, this.pixel.y, (x * 4) + y);
+      this.cancelSelection();
+    },
+    cancelSelection() {
+      this.cancelPixelSelection();
+      this.selectedColor = null;
+    },
+    ...mapMutations(['cancelPixelSelection']),
+  },
+  mounted() {
+    this.isMounted = true;
+  },
 };
 </script>
 
@@ -13,7 +70,42 @@ export default {
 
 .pixel-card {
   position: absolute;
-  background-color: rgb(255, 0, 0);
+  background-color: #333;
+}
+
+.buttons {
+  position: absolute;
+  color: #888888;
+  width: 100%;
+  bottom: 0;
+}
+
+.buttons.active {
+  color: #cccccc;
+}
+
+.buttons h1 {
+  width: 50%;
+  text-align: center;
+  display: inline-block;
+  font-size: 1.5rem;
+  padding: .5rem;
+}
+
+.buttons.active .cancel {
+  background-color: #ff3860;
+}
+
+.buttons .cancel {
+  background-color: #7F1C2F;
+}
+
+.buttons.active .draw {
+  background-color: #23d160;
+}
+
+.buttons .draw {
+  background-color: #157F3A;
 }
 
 </style>

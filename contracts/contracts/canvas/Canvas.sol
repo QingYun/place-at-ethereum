@@ -33,7 +33,7 @@ contract Canvas is Module, ICanvas {
 
     var pos = getPos(x, y);
     canvas[pos].color = color;
-    LogUpdateColor(x, y, color);
+    LogUpdateColor(x, y, color, now);
   }
 
   function setDifficulties(uint128[] xs, uint128[] ys, uint8[] ds, uint paintedAt) external {

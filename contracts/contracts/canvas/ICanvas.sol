@@ -9,7 +9,7 @@ contract ICanvas {
   }
 
   event LogResize(uint128 from, uint128 to);
-  event LogUpdateColor(uint128 x, uint128 y, uint8 color);
+  event LogUpdateColor(uint128 x, uint128 y, uint8 color, uint at);
   event LogUpdateDifficulties(uint128[] x, uint128[] y, uint8[] difficulty, uint paintedAt);
   event LogUpdateWork(uint128 x, uint128 y, bytes32 work);
 

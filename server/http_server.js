@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { toIntObj } = require('./utils');
+const { getUpdates } = require('./db');
 
 const STATIC_PATH = path.join(__dirname, '../client/dist')
 
@@ -23,6 +25,17 @@ module.exports = (server, draw) => {
       res.sendStatus(200);
     } catch (e) {
       logger.error('On processing drawing request on (%d, %d) for the color [%d]: \n%s', x, y, color, e);
+      res.sendStatus(500);
+    }
+  });
+
+  app.get('/getUpdates', async (req, res) => {
+    const { every, from, to } = toIntObj(req.query);
+    try {
+      const docs = await getUpdates({ every, from, to});
+      res.send(JSON.stringify(docs));
+    } catch (e) {
+      logger.error('On getting updates [%d, %d) for every %ds: \n%s', from, to, every, e);
       res.sendStatus(500);
     }
   });

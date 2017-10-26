@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex';
+import { mapState, mapGetters, mapMutations } from 'vuex';
 import { prop, compose, map } from 'ramda';
 import Matrix from './Matrix';
 import { colorToRGB } from '../utils/color';
@@ -18,10 +18,18 @@ export default {
   components: {
     Matrix,
   },
-  computed: mapState({
-    matrix: compose(map(map(compose(colorToRGB, prop('color')))), prop('canvas')),
-    selected: prop('selectedPixel'),
-  }),
+  computed: {
+    matrix() {
+      const matrix = map(map(compose(colorToRGB, prop('color'))))(this.matrixData);
+      return matrix;
+    },
+    ...mapGetters({
+      matrixData: 'canvas',
+    }),
+    ...mapState({
+      selected: prop('selectedPixel'),
+    }),
+  },
   methods: {
     onPixelClick(x, y) {
       this.selectPixel({ x, y });

@@ -3,7 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { toIntObj } = require('./utils');
-const { getUpdates } = require('./db');
+const { getUpdates, getResizing } = require('./db');
 
 const STATIC_PATH = path.join(__dirname, '../client/dist')
 
@@ -31,11 +31,28 @@ module.exports = (server, draw) => {
 
   app.get('/getUpdates', async (req, res) => {
     const { every, from, to } = toIntObj(req.query);
+    if (every === undefined || from === undefined || to === undefined) 
+      return res.sendStatus(400);
+
     try {
       const docs = await getUpdates({ every, from, to});
       res.send(JSON.stringify(docs));
     } catch (e) {
       logger.error('On getting updates [%d, %d) for every %ds: \n%s', from, to, every, e);
+      res.sendStatus(500);
+    }
+  });
+
+  app.get('/getResizings', async (req, res) => {
+    const { from, to } = toIntObj(req.query);
+    if (from === undefined || to === undefined)
+      return res.sendStatus(500);
+
+    try {
+      const docs = await getResizing({ from, to});
+      res.send(JSON.stringify(docs));
+    } catch (e) {
+      logger.error('On getting resizings [%d, %d): \n%s', from, to, e);
       res.sendStatus(500);
     }
   });

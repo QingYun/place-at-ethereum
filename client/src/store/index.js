@@ -1,21 +1,33 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import { merge } from 'ramda';
+import sandbox from './sandbox';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    useSandbox: false,
     canvas: null,
     selectedPixel: {
       x: -1,
       y: -1,
     },
   },
+  modules: {
+    sandbox,
+  },
+  getters: {
+    canvas(state, getters) {
+      if (state.useSandbox) {
+        return getters['sandbox/canvas'];
+      }
+      return state.canvas;
+    },
+  },
   mutations: {
     initCanvas(state, { canvas }) {
       state.canvas = canvas;
-      console.log(canvas);
     },
 
     updatePixel(state, { x, y, attr }) {
@@ -31,6 +43,18 @@ export default new Vuex.Store({
     cancelPixelSelection(state) {
       state.selectedPixel.x = -1;
       state.selectedPixel.y = -1;
+    },
+
+    useSandbox(state, flag) {
+      state.useSandbox = flag;
+    },
+
+  },
+  actions: {
+    async startPlayback({ commit, dispatch }, payload) {
+      commit('useSandbox', true);
+      await dispatch('sandbox/init', payload);
+      commit('useSandbox', false);
     },
   },
 });

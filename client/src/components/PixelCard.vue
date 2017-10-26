@@ -1,5 +1,5 @@
 <template>
-  <div class="pixel-card" ref="card">
+  <div class="pixel-card" ref="card" @click="cardClick">
     <Graph :width="graphSize" :height="graphSize" :margin="50" v-if="graphSize > 0">
       <Matrix :data="colors" :onClick="onSelectColor" :selected="selectedColor" />
     </Graph>
@@ -12,11 +12,11 @@
 </template>
 
 <script>
-import { mapState, mapMutations } from 'vuex';
+import { mapState, mapMutations, mapActions } from 'vuex';
 import { prop, splitEvery } from 'ramda';
 import Graph from './Graph';
 import Matrix from './Matrix';
-import draw from '../api/draw';
+import { draw } from '../api';
 import { colors } from '../utils/color';
 
 export default {
@@ -46,6 +46,17 @@ export default {
     }),
   },
   methods: {
+    async cardClick() {
+      await this.startPlayback({
+        from: 1491084984000,
+        to: 1491088584000,
+        interval: 500,
+        duration: 1000,
+        updateBufSize: 30,
+        canvasBufSize: 3,
+      });
+      console.log('finished from component');
+    },
     onSelectColor(x, y) {
       this.selectedColor = { x, y };
     },
@@ -59,6 +70,7 @@ export default {
       this.selectedColor = null;
     },
     ...mapMutations(['cancelPixelSelection']),
+    ...mapActions(['startPlayback']),
   },
   mounted() {
     this.isMounted = true;

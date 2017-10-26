@@ -16,11 +16,12 @@
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.1",
-    "nedb": "^1.8.0",
     "nedb-promise": "^2.0.1",
     "pino": "^4.7.2",
     "ramda": "^0.24.1",
+    "signal-exit": "^3.0.2",
     "sleep-promise": "^2.0.0",
+    "sqlite3": "^3.1.13",
     "web3": "^1.0.0-beta.22"
   },
   "devDependencies": {

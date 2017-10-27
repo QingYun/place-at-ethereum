@@ -1,14 +1,29 @@
 <template>
   <div :style="{ width: `${width}px`, height: `${height}px` }">
     <canvas 
+      @click="canvasClick"
       class="matrix-canvas" ref="front-canvas"
       :style="canvasStyle" 
       :width="frontCanvasWidth" 
-      :height="frontCanvasHeight" />
+      :height="frontCanvasHeight"
+    />
+
     <canvas 
       class="back-canvas" ref="back-canvas"
       :width="backCanvasWidth" 
       :height="backCanvasHeight" />
+
+    <svg
+      v-if="selected && selected.x !== -1"
+      class="selection"
+      :style="selectionStyle"
+    >
+      <rect class="box" 
+        :x="0" :y="0" :width="pixelWidth" :height="pixelHeight" 
+        :style="{ strokeWidth: `${pixelWidth / 10}px` }"
+      />
+      <rect class="shining" :x="0" :y="0" :width="pixelWidth" :height="pixelHeight" />
+    </svg>
   </div>
 </template>
 
@@ -49,14 +64,24 @@ export default {
 
       const width = this.pixelWidth * this.imageData.width;
       const height = this.pixelHeight * this.imageData.height;
-      const gapWidth = (this.idealWidth - width) / 2;
-      const gapHeight = (this.idealHeight - height) / 2;
-      console.log('canvas style changed');
       return {
-        top: `${this.marginT + gapHeight}px`,
-        left: `${this.marginL + gapWidth}px`,
+        top: `${this.marginT}px`,
+        left: `${this.marginL}px`,
         width: `${width}px`,
         height: `${height}px`,
+      };
+    },
+    selectionStyle() {
+      if (!this.selected || this.selected.x === -1) return {};
+
+      const top = this.pixelHeight * this.selected.y;
+      const left = this.pixelWidth * this.selected.x;
+
+      return {
+        top: `${top + this.marginT}px`,
+        left: `${left + this.marginL}px`,
+        width: `${this.pixelWidth}px`,
+        height: `${this.pixelHeight}px`,
       };
     },
     idealWidth() {
@@ -110,21 +135,23 @@ export default {
   methods: {
     updateCanvas() {
       if (!this.imageData) return;
-      console.time('put image data');
       this.backCtx.putImageData(this.imageData, 0, 0);
-      console.timeEnd('put image data');
       this.frontCtx.save();
       this.frontCtx.imageSmoothingEnabled = false;
       this.frontCtx.scale(this.pixelWidth, this.pixelHeight);
-      console.time('draw canvas');
       this.frontCtx.drawImage(this.$refs['back-canvas'], 0, 0);
-      console.timeEnd('draw canvas');
       this.frontCtx.restore();
+    },
+
+    canvasClick({ offsetX, offsetY }) {
+      this.onClick(
+        Math.floor(offsetX / this.pixelWidth),
+        Math.floor(offsetY / this.pixelHeight),
+      );
     },
   },
   watch: {
     data() {
-      console.log('drawing');
       this.updateCanvas();
     },
     canvasStyle() {
@@ -145,6 +172,25 @@ export default {
 
 .back-canvas {
   display: none;
+}
+
+@keyframes show-selection {
+  0%    { fill: rgba(255, 255, 255, 0); }
+  50%   { fill: rgba(255, 255, 255, .8); }
+  100%  { fill: rgba(255, 255, 255, 0); }
+}
+
+.selection {
+  position: absolute;
+}
+
+.selection .shining {
+  animation: show-selection 2s infinite;
+}
+
+.selection .box {
+  stroke: black;
+  fill: rgba(0,0,0,0);
 }
 
 </style>

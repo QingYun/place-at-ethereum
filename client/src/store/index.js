@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { merge } from 'ramda';
 import sandbox from './sandbox';
+import { colorToByteArray, fillImageData } from '../utils/color';
 
 Vue.use(Vuex);
 
@@ -23,6 +24,15 @@ export default new Vuex.Store({
         return getters['sandbox/canvas'];
       }
       return state.canvas;
+    },
+
+    colorImageData(state, getters) {
+      if (state.useSandbox) {
+        return getters['sandbox/canvas'];
+      }
+      const imageData = new ImageData(state.canvas.length, state.canvas.length);
+      fillImageData(p => colorToByteArray(p.color), imageData.data, state.canvas);
+      return imageData;
     },
   },
   mutations: {

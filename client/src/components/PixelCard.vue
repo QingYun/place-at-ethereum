@@ -48,12 +48,10 @@ export default {
   methods: {
     async cardClick() {
       await this.startPlayback({
-        from: 1491084984000,
-        to: 1491088584000,
-        interval: 500,
-        duration: 1000,
-        updateBufSize: 30,
-        canvasBufSize: 3,
+        from: 0,
+        to: 1491174984000,
+        interval: 200,
+        duration: 10 * 1000,
       });
       console.log('finished from component');
     },

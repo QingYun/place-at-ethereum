@@ -24,7 +24,19 @@ const calcDifficulty = t => ({ difficulty, paintedAt }) => {
 
 export default {
   name: 'DifficultyMatrix',
-  props: ['width', 'height'],
+  props: {
+    width: Number,
+    height: Number,
+    marginLeft: Number,
+    marginRight: Number,
+    marginTop: Number,
+    marginBottom: Number,
+    margin: {
+      type: Number,
+      default: 0,
+      require: false,
+    },
+  },
   created() {
     setInterval(() => { this.now = Date.now() / 1000; }, 1000);
   },

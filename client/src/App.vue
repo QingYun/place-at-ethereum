@@ -1,23 +1,23 @@
 <template>
   <div id="app" v-if="canvas" :style="appStyle">
-    <Graph 
+    <CanvasMatrix 
       id="canvas-matrix" 
       :width="canvasMatrixSize.width" 
       :height="canvasMatrixSize.height" 
       :margin="30"
       :marginRight="15"
-      :style="{ top: '0', left: '0' }">
-      <CanvasMatrix />
-    </Graph>
-    <Graph 
+      :style="{ top: '0', left: '0' }"
+    />
+    <!--
+    <DifficultyMatrix 
       id="difficulty-matrix" 
       :width="difficultyMatrixSize.width" 
       :height="difficultyMatrixSize.height" 
       :margin="30"
       :marginLeft="15"
-      :style="{ top: '0', right: '0' }">
-      <DifficultyMatrix />
-    </Graph>
+      :style="{ top: '0', right: '0' }"
+    />
+    -->
     <PixelCard :style="{ right: '30px', bottom: '30px', height: pixelCardSize.height, width: pixelCardSize.width }" />
     <router-view></router-view>
   </div>

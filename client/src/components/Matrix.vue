@@ -144,7 +144,6 @@ export default {
       let imageData = this.imageData;
       if (!imageData) {
         if (!this.data) return;
-        console.log(this.data[3].map(c => c.r));
         imageData = new ImageData(this.data.length, this.data.length);
         fillImageData(hexColorToByteArray, imageData.data, this.data);
       }

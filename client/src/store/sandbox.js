@@ -24,12 +24,18 @@ function migrateCanvas(prev, size) {
 
   const offset = (size - prev.width) / 2;
 
-  range(0, prev.width).forEach(x =>
-  range(0, prev.height).forEach(y =>
-  range(0, 4).forEach((n) => {
-    canvas.data[imageDataCell(canvas, x + offset, y + offset) + n] =
-      prev.data[imageDataCell(prev, x, y) + n];
-  })));
+  for (let x = 0; x < prev.width; x += 1) {
+    for (let y = 0; y < prev.height; y += 1) {
+      canvas.data[imageDataCell(canvas, x + offset, y + offset)] =
+        prev.data[imageDataCell(prev, x, y)];
+      canvas.data[imageDataCell(canvas, x + offset, y + offset) + 1] =
+        prev.data[imageDataCell(prev, x, y) + 1];
+      canvas.data[imageDataCell(canvas, x + offset, y + offset) + 2] =
+        prev.data[imageDataCell(prev, x, y) + 2];
+      canvas.data[imageDataCell(canvas, x + offset, y + offset) + 3] =
+        prev.data[imageDataCell(prev, x, y) + 3];
+    }
+  }
 
   return canvas;
 }
@@ -158,12 +164,15 @@ export default {
       console.timeEnd('migrateCanvas');
 
       console.time('update canvas');
-      updates.updates.forEach(({ x, y, color }) => {
+      for (let i = 0; i < updates.updates.length; i += 1) {
+        const { x, y, color } = updates.updates[i];
         const colorArr = colorToByteArray(color);
-        range(0, 4).forEach((n) => {
-          canvas.data[imageDataCell(canvas, x, y) + n] = colorArr[n];
-        });
-      });
+        const cell = imageDataCell(canvas, x, y);
+        canvas.data[cell] = colorArr[0];
+        canvas.data[cell + 1] = colorArr[1];
+        canvas.data[cell + 2] = colorArr[2];
+        canvas.data[cell + 3] = colorArr[3];
+      }
       console.timeEnd('update canvas');
 
       commit('updateCanvas', {

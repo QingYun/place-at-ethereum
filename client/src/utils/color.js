@@ -28,6 +28,17 @@ export function colorToByteArray(c) {
   return uint8Colors[c];
 }
 
+const hexToInt = (str, begin, end) => parseInt(str.substr(begin, end - begin), 16);
+
+export function hexColorToByteArray(c) {
+  return [
+    hexToInt(c, 1, 3),
+    hexToInt(c, 3, 5),
+    hexToInt(c, 5, 7),
+    255,
+  ];
+}
+
 export function fillImageData(getColorArray, data, matrix) {
   if (data.length !== (matrix.length * matrix[0].length) * 4) {
     throw new Error(`Wrong ImageData length: ${data.length} vs ${matrix.length * matrix[0].length * 4}`);

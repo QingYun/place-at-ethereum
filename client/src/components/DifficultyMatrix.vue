@@ -12,7 +12,7 @@ import { scaleSequential } from 'd3-scale';
 import { interpolateRdYlBu } from 'd3-scale-chromatic';
 import Matrix from './Matrix';
 
-const chooseColor = t => (t === 1 ? '#222' : interpolateRdYlBu(t));
+const chooseColor = t => (t === 1 ? '#222222' : interpolateRdYlBu(t));
 const difficultyToRGB = scaleSequential(chooseColor)
   .domain([30, 0]);
 

@@ -1,8 +1,10 @@
 <template>
-  <div class="pixel-card" ref="card" @click="cardClick">
-    <Graph :width="graphSize" :height="graphSize" :margin="50" v-if="graphSize > 0">
-      <Matrix :data="colors" :onClick="onSelectColor" :selected="selectedColor" />
-    </Graph>
+  <div class="pixel-card" ref="card">
+    <Matrix 
+      :style="matrixStyle"
+      :data="colors" :onClick="onSelectColor" :selected="selectedColor" 
+      :width="graphSize" :height="graphSize" :margin="50" v-if="graphSize > 0"
+    />
 
     <div class="buttons" :class="{ active: isActive }" ref="buttons">
       <h1 class="cancel" @click="cancelSelection">Cancel</h1><h1 class="draw" @click="drawPixel">Draw</h1>
@@ -38,6 +40,13 @@ export default {
         this.$refs.card.clientHeight - this.$refs.buttons.clientHeight,
       );
     },
+    matrixStyle() {
+      if (this.graphSize <= 0) return {};
+      return {
+        marginLeft: `${(this.$refs.card.clientWidth - this.graphSize) / 2}px`,
+        position: 'absolute',
+      };
+    },
     isActive() {
       return this.pixel.x !== -1;
     },
@@ -50,7 +59,7 @@ export default {
       await this.startPlayback({
         from: 0,
         to: 1491174984000,
-        interval: 200,
+        interval: 100,
         duration: 10 * 1000,
       });
       console.log('finished from component');
@@ -60,7 +69,7 @@ export default {
     },
     drawPixel() {
       const { x, y } = this.selectedColor;
-      draw(this.pixel.x, this.pixel.y, (x * 4) + y);
+      draw(this.pixel.x, this.pixel.y, (y * 4) + x);
       this.cancelSelection();
     },
     cancelSelection() {

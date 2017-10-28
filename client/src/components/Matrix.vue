@@ -29,7 +29,7 @@
 
 <script>
 import Pixel from './Pixel';
-// import { fillImageData } from '../utils/color';
+import { fillImageData, hexColorToByteArray } from '../utils/color';
 
 export default {
   name: 'Matrix',
@@ -60,10 +60,11 @@ export default {
   },
   computed: {
     canvasStyle() {
-      if (!this.imageData) return {};
+      const data = this.imageData || this.data;
+      if (!data) return 0;
 
-      const width = this.pixelWidth * this.imageData.width;
-      const height = this.pixelHeight * this.imageData.height;
+      const width = this.pixelWidth * (data.width || data.length);
+      const height = this.pixelHeight * (data.height || data.length);
       return {
         top: `${this.marginT}px`,
         left: `${this.marginL}px`,
@@ -103,28 +104,34 @@ export default {
       return this.marginTop || this.margin;
     },
     pixelWidth() {
-      if (!this.imageData) return 0;
-      return this.idealWidth / this.imageData.width;
+      const data = this.imageData || this.data;
+      if (!data) return 0;
+      return this.idealWidth / (data.width || data.length);
     },
     pixelHeight() {
-      if (!this.imageData) return 0;
-      return this.idealHeight / this.imageData.height;
+      const data = this.imageData || this.data;
+      if (!data) return 0;
+      return this.idealHeight / (data.height || data.length);
     },
     frontCanvasWidth() {
-      if (!this.imageData) return 0;
-      return this.imageData.width * this.pixelWidth;
+      const data = this.imageData || this.data;
+      if (!data) return 0;
+      return (data.width || data.length) * this.pixelWidth;
     },
     frontCanvasHeight() {
-      if (!this.imageData) return 0;
-      return this.imageData.height * this.pixelHeight;
+      const data = this.imageData || this.data;
+      if (!data) return 0;
+      return (data.height || data.length) * this.pixelHeight;
     },
     backCanvasWidth() {
-      if (!this.imageData) return 0;
-      return this.imageData.width;
+      const data = this.imageData || this.data;
+      if (!data) return 0;
+      return data.width || data.length;
     },
     backCanvasHeight() {
-      if (!this.imageData) return 0;
-      return this.imageData.height;
+      const data = this.imageData || this.data;
+      if (!data) return 0;
+      return data.height || data.length;
     },
   },
   mounted() {
@@ -134,8 +141,14 @@ export default {
   },
   methods: {
     updateCanvas() {
-      if (!this.imageData) return;
-      this.backCtx.putImageData(this.imageData, 0, 0);
+      let imageData = this.imageData;
+      if (!imageData) {
+        if (!this.data) return;
+        console.log(this.data[3].map(c => c.r));
+        imageData = new ImageData(this.data.length, this.data.length);
+        fillImageData(hexColorToByteArray, imageData.data, this.data);
+      }
+      this.backCtx.putImageData(imageData, 0, 0);
       this.frontCtx.save();
       this.frontCtx.imageSmoothingEnabled = false;
       this.frontCtx.scale(this.pixelWidth, this.pixelHeight);

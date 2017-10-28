@@ -58,7 +58,6 @@ export default {
       state.canvasSize = 0;
       state.canvases = repeat(null, Math.max(2, 1000 / interval));
 
-      // buffer 3 second's data
       state.updateBufSize = state.canvases.length * 5;
       state.updates = [];
 
@@ -106,14 +105,16 @@ export default {
 
       const updateBufSize = state.updateBufSize;
       const canvasBufSize = state.canvases.length;
-      const end = Math.min(state.to, state.from + (state.every * updateBufSize));
 
       const [updates, resizings] = await Promise.all([
-        getUpdates(state.every, state.from, end),
+        Promise.all(range(0, updateBufSize).map(n => getUpdates(
+          state.every,
+          Math.max(state.from, state.from + (state.every * (n - 1))),
+          Math.min(state.to, state.from + (state.every * n))))),
         getResizings(state.from, state.to),
       ]);
 
-      commit('saveUpdates', updates.data);
+      updates.forEach(update => commit('saveUpdates', update.data));
       commit('saveResizings', resizings.data);
       // make sure there's a blank canvas buffer to draw after the each rendering
       for (let i = 0; i < canvasBufSize - 1; i += 1) {
@@ -125,22 +126,20 @@ export default {
 
     async renderCanvas({ commit, dispatch, state }, canvasID) {
       console.log('renderCanvas', canvasID);
-      if (state.renderedTo >= state.to) {
-        commit('updateCanvas', {
-          canvasID,
-          canvas: null,
-        });
-        return;
-      }
-
-      const updates = head(state.updates);
-      /*
+      let updates = head(state.updates);
       while (!updates) {
+        if (state.renderedTo >= state.to) {
+          commit('updateCanvas', {
+            canvasID,
+            canvas: null,
+          });
+          return;
+        }
+
         await dispatch('bufferUpdates'); // eslint-disable-line no-await-in-loop
         await sleep(1); // eslint-disable-line no-await-in-loop
         updates = head(state.updates);
       }
-      */
       commit('consumeUpdate');
       dispatch('bufferUpdates');
 

@@ -4,9 +4,9 @@ const req = axios.create({
   baseURL: `http://${window.location.hostname}:8081`,
 });
 
-export function draw(x, y, color) {
+export function draw(row, col, color) {
   return req.post('/draw', {
-    x, y, color,
+    x: col, y: row, color,
   });
 }
 

@@ -8,7 +8,6 @@
       :marginRight="15"
       :style="{ top: '0', left: '0' }"
     />
-    <!--
     <DifficultyMatrix 
       id="difficulty-matrix" 
       :width="difficultyMatrixSize.width" 
@@ -17,7 +16,6 @@
       :marginLeft="15"
       :style="{ top: '0', right: '0' }"
     />
-    -->
     <PixelCard :style="{ right: '30px', bottom: '30px', height: pixelCardSize.height, width: pixelCardSize.width }" />
     <router-view></router-view>
   </div>

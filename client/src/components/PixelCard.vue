@@ -1,5 +1,5 @@
 <template>
-  <div class="pixel-card" ref="card" @click="cardClick">
+  <div class="pixel-card" ref="card">
     <Matrix 
       :style="matrixStyle"
       :data="colors" :onClick="onSelectColor" :selected="selectedColor" 

@@ -64,7 +64,7 @@ export default {
       state.canvasSize = 0;
       state.canvases = repeat(null, Math.max(2, 1000 / interval));
 
-      state.updateBufSize = state.canvases.length * 5;
+      state.updateBufSize = (state.to - state.from) / state.every;
       state.updates = [];
 
       state.fetchingUpdates = false;
@@ -187,7 +187,7 @@ export default {
 
       commit('setFetchingUpdates');
 
-      const n = Math.ceil(state.updateBufSize / 5);
+      const n = 2;
       const start = last(state.updates).at;
       const end = Math.min(state.to, start + (state.every * n));
       console.log(state.to, 'vs', start);

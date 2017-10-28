@@ -1,4 +1,4 @@
-const { uniqBy, merge, toPairs, sortBy, head } = require('ramda');
+const { uniqBy, merge, toPairs, sortBy, head, zip, fromPairs } = require('ramda');
 const { toInt } = require('./utils');
 const sqlite3 = process.env.NODE_ENV === 'production' ? require('sqlite3') : require('sqlite3').verbose(),
       db = new sqlite3.Database(process.env.DATA_FILE, () => {
@@ -34,29 +34,39 @@ onExit(() => {
   db.close();
 });
 
+const getUpdatesQuery = db.prepare(`
+  SELECT DISTINCT x, y, color FROM drawings
+  WHERE at >= ? AND at < ?
+  ORDER BY at DESC
+`);
+
 module.exports.getUpdates = async ({ every, from, to }) => {
   return new Promise(async (resolve, reject) => {
-    const query = db.prepare(`
-      SELECT DISTINCT x, y, color FROM drawings
-      WHERE at >= ? AND at < ?
-      ORDER BY at DESC
-    `);
-
-    const updates = {};
+    console.time('getUpdates');
+    const promises = [];
+    const ends = [];
     for (; from < to; from += every) {
       let end = Math.min(from + every, to);
-      const update = await (new Promise((resolve, reject) => query.all(
+      ends.push(end);
+      promises.push(new Promise((resolve, reject) => getUpdatesQuery.all(
         [from, end], 
         (e, docs) => {
           if (e) return reject(e);
+          console.time('de-duplicating update');
           resolve(uniqBy(({ x, y }) => x * 1000 + y, docs));
+          console.timeEnd('de-duplicating update');
         }
       )));
-
-      updates[end] = update;
     }
 
+    console.time('waiting for queries');
+    const updates = fromPairs(zip(ends, await Promise.all(promises)));
+    console.timeEnd('waiting for queries');
+
+    console.time('forming output');
     resolve(sortBy(head, toPairs(updates)).map(([at, updates]) => ({ at: toInt(at), updates })));
+    console.timeEnd('forming output');
+    console.timeEnd('getUpdates');
   });
 }
 

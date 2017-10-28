@@ -1,5 +1,5 @@
 import sleep from 'sleep-promise';
-import { repeat, head, tail, last, range } from 'ramda';
+import { repeat, head, tail, last, range, merge } from 'ramda';
 import { getUpdates, getResizings } from '../api';
 import { colorToByteArray } from '../utils/color';
 
@@ -48,7 +48,7 @@ export default {
   getters: {
     canvas(state) {
       if (state.frontCanvas === -1) return null;
-      return state.canvases[state.frontCanvas];
+      return state.canvases[state.frontCanvas].color;
     },
   },
   mutations: {
@@ -62,9 +62,11 @@ export default {
 
       state.frontCanvas = -1;
       state.canvasSize = 0;
+      state.showedTo = state.from;
       state.canvases = repeat(null, Math.max(2, 1000 / interval));
+      state.toRender = range(0, state.canvases.length - 1);
 
-      state.updateBufSize = (state.to - state.from) / state.every;
+      state.updateBufSize = state.canvases.length * 2;
       state.updates = [];
 
       state.fetchingUpdates = false;
@@ -79,6 +81,14 @@ export default {
       state.updates = tail(state.updates);
     },
 
+    markRendered(state) {
+      state.toRender = tail(state.toRender);
+    },
+
+    addToRender(state, canvasID) {
+      state.toRender = state.toRender.concat(canvasID);
+    },
+
     saveResizings(state, resizings) {
       state.resizings = resizings;
     },
@@ -89,10 +99,14 @@ export default {
     },
 
     updateCanvas(state, { canvasID, canvas }) {
-      state.canvases.splice(canvasID, 1, canvas);
+      const newCanvas = canvas && merge(state.canvases[canvasID], canvas);
+      state.canvases.splice(canvasID, 1, newCanvas);
     },
 
     setFrontCanvas(state, canvasID) {
+      if (canvasID >= 0) {
+        state.showedTo = state.canvases[canvasID].at;
+      }
       state.frontCanvas = canvasID;
     },
 
@@ -110,28 +124,26 @@ export default {
       commit('init', payload);
 
       const updateBufSize = state.updateBufSize;
-      const canvasBufSize = state.canvases.length;
+      const end = Math.min(state.to, state.from + (state.every * updateBufSize));
 
       const [updates, resizings] = await Promise.all([
-        Promise.all(range(0, updateBufSize).map(n => getUpdates(
-          state.every,
-          Math.max(state.from, state.from + (state.every * (n - 1))),
-          Math.min(state.to, state.from + (state.every * n))))),
+        getUpdates(state.every, state.from, end),
         getResizings(state.from, state.to),
       ]);
 
-      updates.forEach(update => commit('saveUpdates', update.data));
+      commit('saveUpdates', updates.data);
       commit('saveResizings', resizings.data);
-      // make sure there's a blank canvas buffer to draw after the each rendering
-      for (let i = 0; i < canvasBufSize - 1; i += 1) {
-        await dispatch('renderCanvas', i); // eslint-disable-line no-await-in-loop
-      }
 
+      dispatch('renderCanvas');
       return dispatch('showCanvas', 0);
     },
 
-    async renderCanvas({ commit, dispatch, state }, canvasID) {
+    async renderCanvas({ commit, dispatch, state }) {
+      while (state.toRender.length === 0) await sleep(1);
+      const canvasID = head(state.toRender);
+
       console.log('renderCanvas', canvasID);
+
       let updates = head(state.updates);
       while (!updates) {
         if (state.renderedTo >= state.to) {
@@ -142,8 +154,8 @@ export default {
           return;
         }
 
-        await dispatch('bufferUpdates'); // eslint-disable-line no-await-in-loop
-        await sleep(1); // eslint-disable-line no-await-in-loop
+        await dispatch('bufferUpdates');
+        await sleep(1);
         updates = head(state.updates);
       }
       commit('consumeUpdate');
@@ -160,7 +172,8 @@ export default {
 
       const prevCanvasID = (canvasID + (state.canvases.length - 1)) % state.canvases.length;
       console.time('migrateCanvas');
-      const canvas = migrateCanvas(state.canvases[prevCanvasID], size);
+      const canvas = migrateCanvas(
+        state.canvases[prevCanvasID] && state.canvases[prevCanvasID].color, size);
       console.timeEnd('migrateCanvas');
 
       console.time('update canvas');
@@ -175,9 +188,17 @@ export default {
       }
       console.timeEnd('update canvas');
 
+      commit('markRendered');
       commit('updateCanvas', {
-        canvas, canvasID,
+        canvasID,
+        canvas: {
+          at: state.renderedTo,
+          color: canvas,
+          consumed: false,
+        },
       });
+
+      dispatch('renderCanvas');
     },
 
     async bufferUpdates({ commit, dispatch, state }) {
@@ -187,8 +208,8 @@ export default {
 
       commit('setFetchingUpdates');
 
-      const n = 2;
-      const start = last(state.updates).at;
+      const n = Math.ceil(1000 / state.interval);
+      const start = last(state.updates) ? last(state.updates).at : state.renderedTo;
       const end = Math.min(state.to, start + (state.every * n));
       console.log(state.to, 'vs', start);
       console.log('fetching updates', n, 'from', start, 'to', end, 'every', state.every);
@@ -206,13 +227,17 @@ export default {
 
     async showCanvas({ commit, dispatch, state }, canvasID) {
       console.log('showCanvas', canvasID);
-      if (state.canvases[canvasID] === null) {
+      if (state.showedTo >= state.to) {
         return dispatch('finish');
+      }
+      while (!state.canvases[canvasID] || state.canvases[canvasID].consumed) {
+        await sleep(1);
       }
 
       commit('setFrontCanvas', canvasID);
       const prevID = (canvasID + (state.canvases.length - 1)) % state.canvases.length;
-      dispatch('renderCanvas', prevID);
+      commit('addToRender', prevID);
+      commit('updateCanvas', { canvasID, canvas: { consumed: true } });
       await sleep(state.interval);
       return dispatch('showCanvas', (canvasID + 1) % state.canvases.length);
     },

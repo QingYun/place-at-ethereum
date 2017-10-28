@@ -1,4 +1,5 @@
-const { uniqBy, merge, toPairs, sortBy, head, zip, fromPairs } = require('ramda');
+const os = require('os');
+const { range, uniqBy, merge, toPairs, sortBy, head, zip, fromPairs } = require('ramda');
 const { toInt } = require('./utils');
 const sqlite3 = process.env.NODE_ENV === 'production' ? require('sqlite3') : require('sqlite3').verbose(),
       db = new sqlite3.Database(process.env.DATA_FILE, () => {
@@ -29,16 +30,20 @@ const sqlite3 = process.env.NODE_ENV === 'production' ? require('sqlite3') : req
         });
       });
 
+const dbs = range(0, os.cpus().length + 2)
+  .map(() => new sqlite3.Database(process.env.DATA_FILE))
+  .concat(db);
+
 const onExit = require('signal-exit');
 onExit(() => {
   db.close();
 });
 
-const getUpdatesQuery = db.prepare(`
+const getUpdatesQuery = dbs.map(ins => ins.prepare(`
   SELECT DISTINCT x, y, color FROM drawings
   WHERE at >= ? AND at < ?
   ORDER BY at DESC
-`);
+`));
 
 module.exports.getUpdates = async ({ every, from, to }) => {
   return new Promise(async (resolve, reject) => {
@@ -48,13 +53,12 @@ module.exports.getUpdates = async ({ every, from, to }) => {
     for (; from < to; from += every) {
       let end = Math.min(from + every, to);
       ends.push(end);
-      promises.push(new Promise((resolve, reject) => getUpdatesQuery.all(
+      const q = getUpdatesQuery[ends.length % dbs.length];
+      promises.push(new Promise((resolve, reject) => q.all(
         [from, end], 
         (e, docs) => {
           if (e) return reject(e);
-          console.time('de-duplicating update');
           resolve(uniqBy(({ x, y }) => x * 1000 + y, docs));
-          console.timeEnd('de-duplicating update');
         }
       )));
     }
@@ -63,9 +67,7 @@ module.exports.getUpdates = async ({ every, from, to }) => {
     const updates = fromPairs(zip(ends, await Promise.all(promises)));
     console.timeEnd('waiting for queries');
 
-    console.time('forming output');
     resolve(sortBy(head, toPairs(updates)).map(([at, updates]) => ({ at: toInt(at), updates })));
-    console.timeEnd('forming output');
     console.timeEnd('getUpdates');
   });
 }

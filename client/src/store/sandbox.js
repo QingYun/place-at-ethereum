@@ -253,6 +253,7 @@ export default {
         }
       }
       console.timeEnd('render color + update difficulty');
+      if (updates.updates.length < 100) console.log('wired updates', updates);
 
       console.time('render difficulty');
       // render difficulty

@@ -1,8 +1,8 @@
 <template>
-  <div class="pixel-card" ref="card" @click="cardClick">
+  <div class="pixel-card" ref="card">
     <Matrix 
       :style="matrixStyle"
-      :data="colors" :onClick="onSelectColor" :selected="selectedColor" 
+      :data="colors" :onClick="onSelectColor" :selected="selectedColor" :scale="1"
       :width="graphSize" :height="graphSize" :margin="50" v-if="graphSize > 0"
     />
 

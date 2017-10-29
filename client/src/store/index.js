@@ -17,6 +17,12 @@ export default new Vuex.Store({
       y: -1,
     },
     refreshDifficultyUntil: 0,
+    view: {
+      scale: 1,
+      baseScale: 1,
+      center: { x: 0.5, y: 0.5 },
+      deltaCenter: { x: 0, y: 0 },
+    },
   },
   modules: {
     sandbox,
@@ -45,6 +51,17 @@ export default new Vuex.Store({
       const imageData = new ImageData(state.canvas.length, state.canvas.length);
       fillImageData(p => difficultyToByteArray(p.difficulty), imageData.data, state.canvas);
       return imageData;
+    },
+
+    scale(state) {
+      return state.view.scale * state.view.baseScale;
+    },
+
+    viewCenter(state) {
+      return {
+        x: state.view.center.x - state.view.deltaCenter.x,
+        y: state.view.center.y - state.view.deltaCenter.y,
+      };
     },
   },
   mutations: {
@@ -92,11 +109,15 @@ export default new Vuex.Store({
       }
       state.canvas = newCanvas;
     },
+
+    setView(state, view) {
+      state.view = merge(state.view, view);
+    },
   },
   actions: {
     startRefreshingDifficulty({ commit, dispatch, state }) {
       const refreshing = Date.now() < state.refreshDifficultyUntil;
-      commit('refreshDifficultyUntil', Date.now() + (21 * 1000));
+      commit('refreshDifficultyUntil', Date.now() + (25 * 1000));
       if (!refreshing) dispatch('refreshDifficulty');
     },
 

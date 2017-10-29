@@ -3,6 +3,7 @@
 import Vue from 'vue';
 import pino from 'pino';
 import Buefy from 'buefy';
+import VueTouch from 'vue-touch';
 import 'buefy/lib/buefy.css';
 import App from './App';
 import router from './router';
@@ -17,6 +18,7 @@ global.logger = pino({
 Vue.config.productionTip = false;
 
 Vue.use(Buefy);
+Vue.use(VueTouch);
 
 /* eslint-disable no-new */
 new Vue({

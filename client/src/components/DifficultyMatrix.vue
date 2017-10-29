@@ -2,6 +2,8 @@
   <Matrix 
     :imageData="imageData" 
     :onClick="onPixelClick"
+    :scale="scale"
+    :viewCenter="viewCenter"
     v-bind="$props" />
 </template>
 
@@ -37,6 +39,8 @@ export default {
   },
   computed: mapGetters({
     imageData: 'difficultyImageData',
+    scale: 'scale',
+    viewCenter: 'viewCenter',
   }),
   methods: {
     onPixelClick(x, y) {

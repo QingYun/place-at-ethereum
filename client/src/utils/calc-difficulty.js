@@ -1,4 +1,4 @@
-const INTERVAL = 10;
+const INTERVAL = 300;
 
 export default function calcDifficulty(difficulty, paintedAt, at) {
   const d = Math.max(1, difficulty);

@@ -45,17 +45,17 @@ export function hexColorToByteArray(c) {
 
 const matchRGB = /rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)/;
 function rgbToByteArray(rgb) {
-  const match = matchRGB.exec(rgb);
+  const match = matchRGB.exec(rgb).map(s => parseInt(s, 10));
   return [match[1], match[2], match[3], 255];
 }
 
-const MAX_DIFFICULTY = 30;
+const MAX_DIFFICULTY = 255;
 const backgroundColor = [34, 34, 34, 255];
 const colorScale = scaleSequential(interpolateRdYlBu).domain([MAX_DIFFICULTY, 0]);
-const difficultyColors = range(0, MAX_DIFFICULTY).map(colorScale).map(rgbToByteArray);
+export const difficultyColors =
+  [backgroundColor].concat(range(0, MAX_DIFFICULTY).map(colorScale).map(rgbToByteArray));
 
 export function difficultyToByteArray(d) {
-  if (d <= 0) return backgroundColor;
   return difficultyColors[d];
 }
 

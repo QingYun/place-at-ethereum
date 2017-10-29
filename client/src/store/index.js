@@ -31,7 +31,7 @@ export default new Vuex.Store({
 
     colorImageData(state, getters) {
       if (state.useSandbox) {
-        return getters['sandbox/canvas'];
+        return getters['sandbox/colorImageData'];
       }
       const imageData = new ImageData(state.canvas.length, state.canvas.length);
       fillImageData(p => colorToByteArray(p.color), imageData.data, state.canvas);
@@ -40,7 +40,7 @@ export default new Vuex.Store({
 
     difficultyImageData(state, getters) {
       if (state.useSandbox) {
-        return getters['sandbox/canvas'];
+        return getters['sandbox/difficultyImageData'];
       }
       const imageData = new ImageData(state.canvas.length, state.canvas.length);
       fillImageData(p => difficultyToByteArray(p.difficulty), imageData.data, state.canvas);

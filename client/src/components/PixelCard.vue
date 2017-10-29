@@ -58,9 +58,9 @@ export default {
     async cardClick() {
       await this.startPlayback({
         from: 0,
-        to: 1491174984000,
+        to: 1491174000000,
         interval: 100,
-        duration: 10 * 1000,
+        duration: 60 * 1000,
       });
       console.log('finished from component');
     },

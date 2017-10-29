@@ -1,26 +1,25 @@
 import sleep from 'sleep-promise';
-import { repeat, head, tail, last, range, merge } from 'ramda';
+import { repeat, head, tail, last, range, merge, times } from 'ramda';
 import { getUpdates, getResizings } from '../api';
-import { colorToByteArray } from '../utils/color';
+import { colorToByteArray, difficultyColors } from '../utils/color';
 
 function imageDataCell(data, x, y) {
   return (y * data.width * 4) + (x * 4);
 }
 
-function makeCanvas(size) {
-  // initially all white
-  return new ImageData(new Uint8ClampedArray(repeat(255, size * size * 4)), size, size);
+function makeCanvas(size, fill) {
+  return new ImageData(new Uint8ClampedArray(repeat(fill, size * size * 4)), size, size);
 }
 
-function migrateCanvas(prev, size) {
-  if (prev === null) return makeCanvas(size);
+function migrateCanvas(prev, size, fill) {
+  if (prev === null) return makeCanvas(size, fill);
   if (prev.width === size) {
     const canvas = new ImageData(size, size);
     canvas.data.set(prev.data);
     return canvas;
   }
 
-  const canvas = makeCanvas(size);
+  const canvas = makeCanvas(size, fill);
 
   const offset = (size - prev.width) / 2;
 
@@ -40,15 +39,56 @@ function migrateCanvas(prev, size) {
   return canvas;
 }
 
+// An array to hold the state of the game at the time of the last frame.
+// Since rendering is single-threaded and ordered, just one such buffer is enough.
+let matrix = null;
+
+function matrixElm(size, x, y) {
+  return (y * size) + x;
+}
+
+function resizeMatrix(size) {
+  if (matrix && matrix.length === size * size) return;
+
+  const newMatrix = times(() => ({
+    paintedAt: 0,
+    difficulty: 0,
+  }), size * size);
+
+  if (!matrix) {
+    matrix = newMatrix;
+    return;
+  }
+
+  const oldSize = Math.sqrt(matrix.length);
+  const offset = oldSize - size;
+
+  for (let x = 0; x < oldSize; x += 1) {
+    for (let y = 0; y < oldSize; y += 1) {
+      const cell = matrix[matrixElm(oldSize, x, y)];
+      newMatrix[matrixElm(size, x + offset, y + offset)] = {
+        paintedAt: cell.paintedAt,
+        difficulty: cell.difficulty,
+      };
+    }
+  }
+
+  matrix = newMatrix;
+}
+
 export default {
   namespaced: true,
   state: {
     frontCanvas: -1,
   },
   getters: {
-    canvas(state) {
+    colorImageData(state) {
       if (state.frontCanvas === -1) return null;
       return state.canvases[state.frontCanvas].color;
+    },
+    difficultyImageData(state) {
+      if (state.frontCanvas === -1) return null;
+      return state.canvases[state.frontCanvas].difficulty;
     },
   },
   mutations: {
@@ -60,13 +100,15 @@ export default {
       state.to = to / 1000;
       state.every = (state.to - state.from) / (duration / interval);
 
+      state.waitTime = (4000 / state.interval) * state.every;
+
       state.frontCanvas = -1;
       state.canvasSize = 0;
       state.showedTo = state.from;
       state.canvases = repeat(null, Math.max(2, 1000 / interval));
       state.toRender = range(0, state.canvases.length - 1);
 
-      state.updateBufSize = state.canvases.length * 2;
+      state.updateBufSize = state.canvases.length * 5;
       state.updates = [];
 
       state.fetchingUpdates = false;
@@ -171,29 +213,68 @@ export default {
       }
 
       const prevCanvasID = (canvasID + (state.canvases.length - 1)) % state.canvases.length;
-      console.time('migrateCanvas');
-      const canvas = migrateCanvas(
-        state.canvases[prevCanvasID] && state.canvases[prevCanvasID].color, size);
-      console.timeEnd('migrateCanvas');
+      const prevCanvas = state.canvases[prevCanvasID];
 
-      console.time('update canvas');
+      resizeMatrix(size);
+      const colorCanvas = migrateCanvas(prevCanvas && prevCanvas.color, size, 255);
+      const difficultyCanvas = migrateCanvas(prevCanvas && prevCanvas.difficulty, size, 0);
+
+      console.time('render color + update difficulty');
       for (let i = 0; i < updates.updates.length; i += 1) {
         const { x, y, color } = updates.updates[i];
+
+        // render color
         const colorArr = colorToByteArray(color);
-        const cell = imageDataCell(canvas, x, y);
-        canvas.data[cell] = colorArr[0];
-        canvas.data[cell + 1] = colorArr[1];
-        canvas.data[cell + 2] = colorArr[2];
-        canvas.data[cell + 3] = colorArr[3];
+        const cell = imageDataCell(colorCanvas, x, y);
+        colorCanvas.data[cell] = colorArr[0];
+        colorCanvas.data[cell + 1] = colorArr[1];
+        colorCanvas.data[cell + 2] = colorArr[2];
+        colorCanvas.data[cell + 3] = colorArr[3];
+
+        // update difficulty
+        const xl = Math.max(0, x - 3);
+        const xh = Math.min(size, x + 4);
+        const yl = Math.max(0, y - 3);
+        const yh = Math.min(size, y + 4);
+        for (let j = xl; j < xh; j += 1) {
+          for (let k = yl; k < yh; k += 1) {
+            const elm = matrix[matrixElm(size, j, k)];
+            const t = updates.at - elm.paintedAt;
+            const dis = Math.max(Math.abs(x - j), Math.abs(y - k));
+            const inc = 4 - dis;
+            let newDifficulty = 0;
+            if (elm.difficulty > 0 && t < state.waitTime) {
+              const d = elm.difficulty;
+              newDifficulty = Math.max(0, d - Math.floor((t * d) / state.waitTime));
+            }
+            elm.difficulty = Math.min(255, newDifficulty + inc);
+            elm.paintedAt = updates.at;
+          }
+        }
       }
-      console.timeEnd('update canvas');
+      console.timeEnd('render color + update difficulty');
+
+      console.time('render difficulty');
+      // render difficulty
+      for (let i = 0; i < matrix.length; i += 1) {
+        if (matrix[i].paintedAt === updates.at) {
+          const cell = i * 4;
+          const colorArr = difficultyColors[matrix[i].difficulty];
+          difficultyCanvas.data[cell] = colorArr[0];
+          difficultyCanvas.data[cell + 1] = colorArr[1];
+          difficultyCanvas.data[cell + 2] = colorArr[2];
+          difficultyCanvas.data[cell + 3] = colorArr[3];
+        }
+      }
+      console.timeEnd('render difficulty');
 
       commit('markRendered');
       commit('updateCanvas', {
         canvasID,
         canvas: {
-          at: state.renderedTo,
-          color: canvas,
+          at: updates.at,
+          color: colorCanvas,
+          difficulty: difficultyCanvas,
           consumed: false,
         },
       });
@@ -202,7 +283,6 @@ export default {
     },
 
     async bufferUpdates({ commit, dispatch, state }) {
-      console.log('bufferUpdates');
       if (state.fetchingUpdates) return;
       if (state.updates.length >= state.updateBufSize) return;
 
@@ -211,9 +291,7 @@ export default {
       const n = Math.ceil(1000 / state.interval);
       const start = last(state.updates) ? last(state.updates).at : state.renderedTo;
       const end = Math.min(state.to, start + (state.every * n));
-      console.log(state.to, 'vs', start);
       console.log('fetching updates', n, 'from', start, 'to', end, 'every', state.every);
-      console.log(state.updates.map(u => u.at));
 
       if (start >= end) return;
 

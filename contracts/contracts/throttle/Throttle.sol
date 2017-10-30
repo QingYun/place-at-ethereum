@@ -18,10 +18,12 @@ contract Throttle is Module, IThrottle {
     var shift = calculateDifficultyImpl(paintedAt, now, difficulty, oldColor == color);
     var work = keccak256(color, prevWork, nonce);
 
+    /*
     if (work >= (bytes32(-1) >> shift)) {
       LogErrorDraw(x, y, color, prevWork, nonce, work, shift);
       return;
     }
+    */
     LogErrorDraw(x, y, color, prevWork, 123, work, shift);
 
     redistDifficulties(x, y);

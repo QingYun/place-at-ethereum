@@ -49,11 +49,14 @@ export default {
     ...mapState({
       selected: prop('selectedPixel'),
       view: prop('view'),
+      playback: prop('useSandbox'),
     }),
   },
   methods: {
     onPixelClick(x, y) {
-      this.selectPixel({ x, y });
+      if (!this.playback) {
+        this.selectPixel({ x, y });
+      }
     },
     zoomCanvas(scale, center) {
       this.setView({

@@ -197,9 +197,12 @@ export default {
     },
 
     canvasClick({ offsetX, offsetY }) {
+      const { x, y } = this.contentPosition;
+      const hOffset = x * this.frontCanvasWidth * this.scale;
+      const vOffset = y * this.frontCanvasHeight * this.scale;
       this.onClick(
-        Math.floor(offsetX / this.pixelWidth),
-        Math.floor(offsetY / this.pixelHeight),
+        Math.floor((hOffset + offsetX) / (this.pixelWidth * this.scale)),
+        Math.floor((vOffset + offsetY) / (this.pixelHeight * this.scale)),
       );
     },
 

@@ -22,6 +22,7 @@ provider.on('connect', async () => {
 
   console.log('starting up servers')
 
+  server.keepAliveTimeout = 120000 * 5;
   require('./http_server')(server, draw);
   require('./ws_server')(server, canvas);
   server.listen(8081, () => console.log('server listening on 8081'));

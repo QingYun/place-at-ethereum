@@ -219,7 +219,6 @@ export default {
       const colorCanvas = migrateCanvas(prevCanvas && prevCanvas.color, size, 255);
       const difficultyCanvas = migrateCanvas(prevCanvas && prevCanvas.difficulty, size, 0);
 
-      console.time('render color + update difficulty');
       for (let i = 0; i < updates.updates.length; i += 1) {
         const { x, y, color } = updates.updates[i];
 
@@ -252,10 +251,7 @@ export default {
           }
         }
       }
-      console.timeEnd('render color + update difficulty');
-      if (updates.updates.length < 100) console.log('wired updates', updates);
 
-      console.time('render difficulty');
       // render difficulty
       for (let i = 0; i < matrix.length; i += 1) {
         if (matrix[i].paintedAt === updates.at) {
@@ -267,7 +263,6 @@ export default {
           difficultyCanvas.data[cell + 3] = colorArr[3];
         }
       }
-      console.timeEnd('render difficulty');
 
       commit('markRendered');
       commit('updateCanvas', {
@@ -307,6 +302,7 @@ export default {
     async showCanvas({ commit, dispatch, state }, canvasID) {
       console.log('showCanvas', canvasID);
       if (state.showedTo >= state.to) {
+        await sleep(3000);
         return dispatch('finish');
       }
       while (!state.canvases[canvasID] || state.canvases[canvasID].consumed) {

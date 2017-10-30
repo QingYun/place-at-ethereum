@@ -1,86 +1,176 @@
 <template>
   <div class="pixel-card" ref="card">
-    <Matrix 
-      :style="matrixStyle"
-      :data="colors" :onClick="onSelectColor" :selected="selectedColor" :scale="1"
-      :width="graphSize" :height="graphSize" :margin="50" v-if="graphSize > 0"
-    />
-
-    <div class="buttons" :class="{ active: isActive }" ref="buttons">
-      <h1 class="cancel" @click="cancelSelection">Cancel</h1><h1 class="draw" @click="drawPixel">Draw</h1>
+    <div v-if="useSandbox && !isPlaying">
+      <div class="section">
+        <h1 class="is-large">loading...</h1>
+      </div>
     </div>
-
+    <div v-if="!useSandbox && selectedPixel.x === -1">
+      <div class="section">
+        <h1 class="instruction">Select a pixel on the left</h1>
+        <h3 class="sub-instruction">or</h3>
+        <h1 class="instruction">Choose a playback below</h1>
+        <div class="buttons">
+          <span class="button is-black" :class="{ 'is-outlined': duration !== 10 }" @click="playFast">Fast</span>
+          <span class="button is-black" :class="{ 'is-outlined': duration !== 30 }" @click="playNormal">Normal</span>
+          <span class="button is-black" :class="{ 'is-outlined': duration !== 60 }" @click="playSlow">Slow</span>
+        </div>
+        <a class="button is-outlined is-danger" @click="theWholeProcess">The Whole Process</a>
+        <a class="button is-outlined is-primary" @click="osu">The War of Osu!</a>
+        <a class="button is-outlined is-success" @click="EUFlag">The Formation of EU flag</a>
+        <a class="button is-outlined is-danger" @click="theVoid">The Void</a>
+        <a class="button is-outlined is-info" @click="blueCorner">The Blue Corner</a>
+        <a class="button is-outlined is-warning" @click="USFlag">The US Flag</a>
+      </div>
+    </div>
+    <DrawingControls v-if="!useSandbox && selectedPixel.x !== -1" />
   </div>
 </template>
 
 <script>
 import { mapState, mapMutations, mapActions } from 'vuex';
-import { prop, splitEvery } from 'ramda';
-import Graph from './Graph';
-import Matrix from './Matrix';
-import { draw } from '../api';
-import { colors } from '../utils/color';
+import DrawingControls from './DrawingControls';
 
 export default {
   name: 'PixelCard',
   components: {
-    Graph, Matrix,
+    DrawingControls,
+  },
+  mounted() {
+    setInterval(() => {
+      if (this.selectedPixel.x !== -1) return;
+      if (this.useSandbox) return;
+      this.theWholeProcess();
+    }, 60000);
   },
   data: () => ({
-    activeTab: 0,
-    isMounted: false,
-    selectedColor: null,
-    colors: splitEvery(4, colors),
+    duration: 30,
+    interval: 100,
   }),
   computed: {
-    graphSize() {
-      if (!this.isMounted || !this.pixel || this.pixel.x === -1) return 0;
-      return Math.min(
-        this.$refs.card.clientWidth,
-        this.$refs.card.clientHeight - this.$refs.buttons.clientHeight,
-      );
-    },
-    matrixStyle() {
-      if (this.graphSize <= 0) return {};
-      return {
-        marginLeft: `${(this.$refs.card.clientWidth - this.graphSize) / 2}px`,
-        position: 'absolute',
-      };
-    },
-    isActive() {
-      return this.pixel.x !== -1;
-    },
+    ...mapState(['useSandbox', 'selectedPixel', 'view']),
     ...mapState({
-      pixel: prop('selectedPixel'),
+      isPlaying(state) {
+        return state.sandbox.frontCanvas !== undefined && state.sandbox.frontCanvas !== -1;
+      },
     }),
   },
   methods: {
-    async cardClick() {
+    async theWholeProcess() {
+      if (this.useSandbox) return;
       await this.startPlayback({
         from: 0,
-        to: 1491174000000,
-        interval: 100,
-        duration: 60 * 1000,
+        to: 1491238800000,
+        interval: this.interval,
+        duration: this.duration * 1000,
       });
-      console.log('finished from component');
+      console.log(this.view);
+      this.resetView();
     },
-    onSelectColor(x, y) {
-      this.selectedColor = { x, y };
+    async osu() {
+      if (this.useSandbox) return;
+      this.setView({
+        baseScale: 9,
+        center: {
+          x: 0.5,
+          y: 0.94,
+        },
+      });
+      await this.startPlayback({
+        from: 0,
+        to: 1491238800000,
+        interval: this.interval,
+        duration: this.duration * 1000,
+      });
+      console.log(this.view);
+      this.resetView();
     },
-    drawPixel() {
-      const { x, y } = this.selectedColor;
-      draw(this.pixel.x, this.pixel.y, (y * 4) + x);
-      this.cancelSelection();
+    async EUFlag() {
+      if (this.useSandbox) return;
+      this.setView({
+        baseScale: 2.3,
+        center: {
+          x: 0.37,
+          y: 0.76,
+        },
+      });
+      await this.startPlayback({
+        from: 0,
+        to: 1491238800000,
+        interval: this.interval,
+        duration: this.duration * 1000,
+      });
+      console.log(this.view);
+      this.resetView();
     },
-    cancelSelection() {
-      this.cancelPixelSelection();
-      this.selectedColor = null;
+    async theVoid() {
+      if (this.useSandbox) return;
+      this.setView({
+        baseScale: 4,
+        center: {
+          x: 0.4,
+          y: 0.58,
+        },
+      });
+      await this.startPlayback({
+        from: 0,
+        to: 1491238800000,
+        interval: this.interval,
+        duration: this.duration * 1000,
+      });
+      console.log(this.view);
+      this.resetView();
     },
-    ...mapMutations(['cancelPixelSelection']),
+    async blueCorner() {
+      if (this.useSandbox) return;
+      this.setView({
+        baseScale: 1.6,
+        center: {
+          x: 0.7,
+          y: 0.7,
+        },
+      });
+      await this.startPlayback({
+        from: 0,
+        to: 1491238800000,
+        interval: this.interval,
+        duration: this.duration * 1000,
+      });
+      console.log(this.view);
+      this.resetView();
+    },
+    async USFlag() {
+      if (this.useSandbox) return;
+      this.setView({
+        baseScale: 5,
+        center: {
+          x: 0.5,
+          y: 0.5,
+        },
+      });
+      await this.startPlayback({
+        from: 0,
+        to: 1491238800000,
+        interval: this.interval,
+        duration: this.duration * 1000,
+      });
+      console.log(this.view);
+      this.resetView();
+    },
+    playFast() {
+      this.duration = 10;
+      this.interval = 100;
+    },
+    playNormal() {
+      this.duration = 30;
+      this.interval = 100;
+    },
+    playSlow() {
+      this.duration = 60;
+      this.interval = 100;
+    },
     ...mapActions(['startPlayback']),
-  },
-  mounted() {
-    this.isMounted = true;
+    ...mapMutations(['resetView', 'setView']),
   },
 };
 </script>
@@ -90,41 +180,24 @@ export default {
 .pixel-card {
   position: absolute;
   background-color: #333;
+  color: #ccc;
 }
 
-.buttons {
-  position: absolute;
-  color: #888888;
-  width: 100%;
-  bottom: 0;
+.pixel-card .button {
+  margin: .2rem;
 }
 
-.buttons.active {
-  color: #cccccc;
+.pixel-card .buttons {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
 }
 
-.buttons h1 {
-  width: 50%;
-  text-align: center;
-  display: inline-block;
-  font-size: 1.5rem;
-  padding: .5rem;
+.pixel-card .instruction {
+  font-size: larger;
 }
 
-.buttons.active .cancel {
-  background-color: #ff3860;
-}
-
-.buttons .cancel {
-  background-color: #7F1C2F;
-}
-
-.buttons.active .draw {
-  background-color: #23d160;
-}
-
-.buttons .draw {
-  background-color: #157F3A;
+.pixel-card .sub-instruction {
+  font-size: small;
 }
 
 </style>

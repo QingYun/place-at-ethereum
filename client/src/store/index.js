@@ -113,6 +113,15 @@ export default new Vuex.Store({
     setView(state, view) {
       state.view = merge(state.view, view);
     },
+
+    resetView(state) {
+      state.view = {
+        scale: 1,
+        baseScale: 1,
+        center: { x: 0.5, y: 0.5 },
+        deltaCenter: { x: 0, y: 0 },
+      };
+    },
   },
   actions: {
     startRefreshingDifficulty({ commit, dispatch, state }) {

@@ -3,6 +3,8 @@ const sleep = require('sleep-promise');
 
 function tryFindNonce(color, target, prevWork) {
   let nonce = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+  // NOTE: for demo
+  return nonce;
   const stop = nonce + 100000;
   let cur = null;
   do {

@@ -6,7 +6,7 @@ import "./ICanvas.sol";
 contract Canvas is Module, ICanvas {
   mapping (uint => Pixel) canvas;
 
-  uint128 constant MIN_SIZE = 5;
+  uint128 constant MIN_SIZE = 81;
   uint128 constant RESIZE_STEP = 2;
   uint128 size = MIN_SIZE;
 
